@@ -7,8 +7,15 @@ import { BookingCalendar } from "@/components/public/BookingCalendar";
 
 export const revalidate = 30;
 
-export default async function BookingPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function BookingPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ reschedule?: string }>;
+}) {
   const { slug } = await params;
+  const sp = await searchParams;
   const evt = await (await eventTypes()).findOne({ slug, active: true });
   if (!evt) notFound();
 
@@ -45,6 +52,11 @@ export default async function BookingPage({ params }: { params: Promise<{ slug: 
 
   return (
     <main className="max-w-5xl mx-auto px-6 py-12 md:py-16 animate-fade-up">
+      {sp.reschedule && (
+        <div className="mb-6 rounded-md border border-[--color-warning] bg-[--color-primary-tint] px-4 py-2 text-sm">
+          Pick a new time below to reschedule your booking.
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-10">
         <aside className="md:col-span-2 space-y-3">
           <div className="h-1 w-12 rounded-full" style={{ background: `var(--color-event-${evt.color})` }} />

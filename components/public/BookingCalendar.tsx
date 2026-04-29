@@ -68,7 +68,25 @@ export function BookingCalendar({ slug, slots, ownerTimezone }: { slug: string; 
             />
             {selected && (
               <Button
-                onClick={() => router.push(`/${slug}/confirm?start=${encodeURIComponent(selected.startUtc)}&tz=${encodeURIComponent(guestTz)}`)}
+                onClick={async () => {
+                  const params = new URLSearchParams(window.location.search);
+                  const reschedule = params.get("reschedule");
+                  if (reschedule) {
+                    const res = await fetch(`/api/bookings/${reschedule}`, {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ newStartUtc: selected!.startUtc }),
+                    });
+                    if (res.ok) {
+                      const { token } = await res.json();
+                      router.push(`/${slug}/booked?token=${token}`);
+                    } else {
+                      alert("Could not reschedule.");
+                    }
+                  } else {
+                    router.push(`/${slug}/confirm?start=${encodeURIComponent(selected!.startUtc)}&tz=${encodeURIComponent(guestTz)}`);
+                  }
+                }}
                 className="w-full"
               >
                 Confirm {formatInTimeZone(new Date(selected.startUtc), guestTz, "h:mm a")}
