@@ -1,14 +1,31 @@
-import Image from "next/image";
+import { Mark } from "./Mark";
 
-export function Wordmark({ className }: { className?: string }) {
+interface Props {
+  size?: number;
+  className?: string;
+  tone?: "default" | "primary";
+}
+
+export function Wordmark({ size = 22, className, tone = "default" }: Props) {
+  const color = tone === "primary" ? "var(--primary)" : "currentColor";
   return (
-    <Image
-      src="/logo/wordmark.svg"
-      alt="Kalendly"
-      width={160}
-      height={32}
-      className={className}
-      priority
-    />
+    <span
+      className={"inline-flex items-center leading-none " + (className ?? "")}
+      style={{ color, height: size }}
+      aria-label="Kalendly"
+    >
+      <Mark size={size} />
+      <span
+        style={{
+          fontWeight: 600,
+          letterSpacing: "-0.04em",
+          fontSize: Math.round(size * 0.86),
+          lineHeight: 1,
+          marginLeft: -2,
+        }}
+      >
+        alendly
+      </span>
+    </span>
   );
 }
