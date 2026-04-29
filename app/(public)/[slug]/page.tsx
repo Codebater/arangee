@@ -21,7 +21,10 @@ export default async function BookingPage({
   const evt = await (await eventTypes()).findOne({ slug, active: true });
   if (!evt) notFound();
 
-  const integ = await (await integrations()).findOne({ provider: "google_calendar", status: "ACTIVE" });
+  const integ = await (await integrations()).findOne({
+    provider: "google_calendar",
+    status: "ACTIVE",
+  });
   const avail = integ ? await (await availability()).findOne({ userId: integ.userId }) : null;
 
   let slots: { startUtc: string; endUtc: string }[] = [];
@@ -30,21 +33,34 @@ export default async function BookingPage({
     try {
       const now = new Date();
       const horizon = new Date(now.getTime() + evt.rules.maxAdvanceDays * 24 * 3600_000);
-      const busy = await getBusyTimes(integ.composioUserId, integ.calendarId, now, horizon, avail.timezone);
+      const busy = await getBusyTimes(
+        integ.composioUserId,
+        integ.calendarId,
+        now,
+        horizon,
+        avail.timezone,
+      );
       const counts: Record<string, number> = {};
       if (evt.rules.maxBookingsPerDay !== null) {
-        const list = await (await bookings()).find({
-          eventTypeSlug: slug,
-          status: "confirmed",
-          startUtc: { $gte: now, $lt: horizon },
-        }).toArray();
+        const list = await (await bookings())
+          .find({
+            eventTypeSlug: slug,
+            status: "confirmed",
+            startUtc: { $gte: now, $lt: horizon },
+          })
+          .toArray();
         for (const b of list) {
           const k = ymdInTz(b.startUtc, avail.timezone);
           counts[k] = (counts[k] ?? 0) + 1;
         }
       }
-      slots = computeSlots({ eventType: evt, availability: avail, busy, now, bookingsPerDay: counts })
-        .map((s) => ({ startUtc: s.startUtc.toISOString(), endUtc: s.endUtc.toISOString() }));
+      slots = computeSlots({
+        eventType: evt,
+        availability: avail,
+        busy,
+        now,
+        bookingsPerDay: counts,
+      }).map((s) => ({ startUtc: s.startUtc.toISOString(), endUtc: s.endUtc.toISOString() }));
     } catch {
       unavailable = true;
     }
@@ -52,25 +68,44 @@ export default async function BookingPage({
     unavailable = true;
   }
 
+  const locationLabel =
+    evt.location.type === "google_meet"
+      ? "Google Meet"
+      : evt.location.type === "phone"
+        ? "Phone"
+        : "In-person";
+
   return (
     <main className="max-w-5xl mx-auto px-6 py-12 md:py-16 animate-fade-up">
       {sp.reschedule && (
-        <div className="mb-6 rounded-md border border-[--color-warning] bg-[--color-primary-tint] px-4 py-2 text-sm">
+        <div className="mb-6 rounded-md bg-[--primary-tint] px-4 py-2.5 text-[13px] text-[--ink] flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-[--primary]" />
           Pick a new time below to reschedule your booking.
         </div>
       )}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-10">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-10 md:gap-14">
         <aside className="md:col-span-2 space-y-3">
-          <div className="h-1 w-12 rounded-full" style={{ background: `var(--color-event-${evt.color})` }} />
-          <h1 className="font-display text-4xl">{evt.title}</h1>
-          <p className="font-mono text-xs text-[--color-ink-muted]">
-            {evt.durationMinutes} min · {evt.location.type === "google_meet" ? "Google Meet" : evt.location.type === "phone" ? "Phone" : "In-person"}
+          <div
+            className="h-[2px] w-10 rounded-full"
+            style={{ background: `var(--event-${evt.color})` }}
+          />
+          <h1 className="text-3xl">{evt.title}</h1>
+          <p className="font-mono text-[12px] text-[--ink-muted]">
+            {evt.durationMinutes}m · {locationLabel}
           </p>
-          {evt.description && <p className="text-sm text-[--color-ink-soft] mt-3 whitespace-pre-wrap">{evt.description}</p>}
+          {evt.description && (
+            <p className="text-[14px] text-[--ink-soft] mt-3 whitespace-pre-wrap leading-relaxed">
+              {evt.description}
+            </p>
+          )}
         </aside>
         <section className="md:col-span-3">
           {unavailable ? (
-            <p className="text-sm text-[--color-ink-muted]">Booking is temporarily unavailable. Please try again later.</p>
+            <div className="rounded-lg border border-[--border] bg-[--surface] p-8 text-center">
+              <p className="text-sm text-[--ink-muted]">
+                Booking is temporarily unavailable. Please try again later.
+              </p>
+            </div>
           ) : (
             <BookingCalendar slug={slug} slots={slots} ownerTimezone={avail!.timezone} />
           )}

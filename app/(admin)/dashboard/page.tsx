@@ -10,7 +10,8 @@ export default async function DashboardPage() {
   await bootstrap();
   const col = await bookings();
   const now = new Date();
-  const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay());
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - now.getDay());
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const sevenAhead = new Date(now.getTime() + 7 * 24 * 3600_000);
 
@@ -23,36 +24,60 @@ export default async function DashboardPage() {
   ]);
 
   return (
-    <div className="space-y-8">
-      <header>
-        <h1 className="text-3xl font-display">Dashboard</h1>
-        <p className="text-[--color-ink-muted] text-sm mt-1">An overview of your bookings.</p>
+    <div className="relative space-y-9">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -inset-x-10 -top-10 h-64 -z-10"
+        style={{
+          background:
+            "radial-gradient(ellipse 70% 60% at 18% 0%, var(--primary-tint), transparent 65%)",
+        }}
+      />
+      <header className="flex items-end justify-between border-b border-[--border] pb-5">
+        <div>
+          <h1 className="text-2xl">Dashboard</h1>
+          <p className="text-[--ink-muted] text-sm mt-1">An overview of your bookings.</p>
+        </div>
       </header>
 
       {(!integ || integ.status !== "ACTIVE") && (
-        <div className="rounded-xl border border-[--color-warning] bg-[--color-primary-tint] p-4 flex items-center justify-between">
-          <p className="text-sm">Connect your Google Calendar to start accepting bookings.</p>
-          <Button nativeButton={false} render={<Link href="/settings" />}>Connect</Button>
+        <div className="rounded-lg border border-[--border] bg-[--primary-tint] px-4 py-3 flex items-center justify-between">
+          <p className="text-sm text-[--ink]">
+            Connect your Google Calendar to start accepting bookings.
+          </p>
+          <Button nativeButton={false} size="sm" render={<Link href="/settings" />}>
+            Connect
+          </Button>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <KpiTile label="This week" value={thisWeek} />
         <KpiTile label="Next 7 days" value={next7} />
         <KpiTile label="This month" value={thisMonth} />
-      </div>
+      </section>
 
       <section>
-        <h2 className="text-lg font-display mb-3">Upcoming</h2>
-        <div className="rounded-xl border border-[--color-border] bg-[--color-surface] divide-y divide-[--color-border]">
-          {upcoming.length === 0 && <div className="p-5 text-sm text-[--color-ink-muted]">No upcoming bookings.</div>}
+        <div className="flex items-end justify-between mb-3">
+          <h2 className="text-base">Upcoming</h2>
+          <span className="text-[11px] uppercase tracking-[0.08em] text-[--ink-muted]">
+            {upcoming.length} scheduled
+          </span>
+        </div>
+        <div className="rounded-lg border border-[--border] bg-[--surface] divide-y divide-[--border] overflow-hidden">
+          {upcoming.length === 0 && (
+            <div className="p-6 text-sm text-[--ink-muted]">No upcoming bookings.</div>
+          )}
           {upcoming.map((b) => (
-            <div key={b._id.toString()} className="p-4 flex items-center justify-between">
-              <div>
-                <div className="font-medium">{b.guestName}</div>
-                <div className="text-xs text-[--color-ink-muted]">{b.eventTypeSlug}</div>
+            <div
+              key={b._id.toString()}
+              className="px-4 py-3 flex items-center justify-between hover:bg-[--surface-hover] transition-colors duration-150"
+            >
+              <div className="min-w-0">
+                <div className="text-sm font-medium text-[--ink] truncate">{b.guestName}</div>
+                <div className="text-[11px] text-[--ink-muted] truncate">/{b.eventTypeSlug}</div>
               </div>
-              <div className="font-mono text-sm tabular">
+              <div className="font-mono text-[12px] tabular text-[--ink-soft] shrink-0 ml-4">
                 {b.startUtc.toUTCString().slice(0, 22)}
               </div>
             </div>

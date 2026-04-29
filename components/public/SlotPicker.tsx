@@ -10,7 +10,13 @@ interface Props {
   selected?: string;
 }
 
-export function SlotPicker({ slots, selectedDate, guestTimezone, onSelect, selected }: Props) {
+export function SlotPicker({
+  slots,
+  selectedDate,
+  guestTimezone,
+  onSelect,
+  selected,
+}: Props) {
   const dayStart = new Date(`${selectedDate}T00:00:00Z`);
   const dayEnd = new Date(`${selectedDate}T23:59:59Z`);
   const filtered = slots.filter((s) => {
@@ -19,7 +25,9 @@ export function SlotPicker({ slots, selectedDate, guestTimezone, onSelect, selec
   });
 
   if (filtered.length === 0) {
-    return <p className="text-sm text-[--color-ink-muted]">No times available.</p>;
+    return (
+      <p className="text-[13px] text-[--ink-muted] py-4">No times available.</p>
+    );
   }
 
   return (
@@ -32,8 +40,10 @@ export function SlotPicker({ slots, selectedDate, guestTimezone, onSelect, selec
             key={s.startUtc}
             type="button"
             onClick={() => onSelect(s)}
-            className={`font-mono text-sm tabular rounded-md border px-3 py-2 transition-colors ${
-              sel ? "bg-[--color-primary] text-[--color-primary-ink] border-[--color-primary]" : "bg-[--color-surface] border-[--color-border] hover:bg-[--color-primary-tint]"
+            className={`font-mono text-[13px] tabular h-9 rounded-md border transition-colors duration-150 ${
+              sel
+                ? "bg-[--primary] text-[--primary-foreground] border-[--primary]"
+                : "bg-[--surface] border-[--border] text-[--ink] hover:bg-[--surface-hover] hover:border-[--border-strong]"
             }`}
           >
             {label}

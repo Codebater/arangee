@@ -22,10 +22,14 @@ export default async function AvailabilityPage() {
       };
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="text-3xl font-display">Availability</h1>
-        <p className="text-[--color-ink-muted] text-sm mt-1">When you're available to take meetings.</p>
+    <div className="space-y-7">
+      <header className="flex items-end justify-between border-b border-[--border] pb-5">
+        <div>
+          <h1 className="text-2xl">Availability</h1>
+          <p className="text-[--ink-muted] text-sm mt-1">
+            When you&apos;re available to take meetings.
+          </p>
+        </div>
       </header>
       <AvailabilityEditor initial={initial} />
     </div>

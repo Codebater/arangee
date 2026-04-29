@@ -79,7 +79,7 @@ export function EventTypeForm({ existingId, initial }: { existingId?: string; in
     <form action={submit} className="space-y-10">
       {/* Basics */}
       <section className="space-y-5">
-        <h2 className="font-display text-xl">Basics</h2>
+        <h2 className="text-base">Basics</h2>
         <div className="grid md:grid-cols-2 gap-5">
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
@@ -124,7 +124,7 @@ export function EventTypeForm({ existingId, initial }: { existingId?: string; in
                   type="button"
                   key={c}
                   onClick={() => patch("color", c)}
-                  className={`h-7 w-7 rounded-full border-2 ${state.color === c ? "border-[--color-ink]" : "border-transparent"}`}
+                  className={`h-7 w-7 rounded-full border-2 ${state.color === c ? "border-[--ink]" : "border-transparent"}`}
                   style={{ background: `var(--color-event-${c})` }}
                   aria-label={c}
                 />
@@ -136,7 +136,7 @@ export function EventTypeForm({ existingId, initial }: { existingId?: string; in
 
       {/* Location */}
       <section className="space-y-5">
-        <h2 className="font-display text-xl">Location</h2>
+        <h2 className="text-base">Location</h2>
         <div className="space-y-2">
           {(["google_meet", "phone", "custom"] as const).map((t) => (
             <label key={t} className="flex items-center gap-2 text-sm">
@@ -173,7 +173,7 @@ export function EventTypeForm({ existingId, initial }: { existingId?: string; in
 
       {/* Rules */}
       <section className="space-y-5">
-        <h2 className="font-display text-xl">Scheduling rules</h2>
+        <h2 className="text-base">Scheduling rules</h2>
         <div className="grid md:grid-cols-2 gap-5">
           <div className="space-y-2">
             <Label>Buffer before (min)</Label>
@@ -205,12 +205,12 @@ export function EventTypeForm({ existingId, initial }: { existingId?: string; in
       {/* Custom questions */}
       <section className="space-y-5">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-xl">Custom questions</h2>
+          <h2 className="text-base">Custom questions</h2>
           <Button type="button" variant="outline" onClick={addQuestion}><Plus size={16} className="mr-2" /> Add question</Button>
         </div>
         <div className="space-y-3">
           {state.customQuestions.map((q, idx) => (
-            <div key={q.id} className="rounded-lg border border-[--color-border] p-4 space-y-3">
+            <div key={q.id} className="rounded-lg border border-[--border] p-4 space-y-3">
               <div className="grid md:grid-cols-3 gap-3">
                 <Input
                   placeholder="Label"
@@ -230,7 +230,7 @@ export function EventTypeForm({ existingId, initial }: { existingId?: string; in
                     next[idx] = t === "select" ? { ...base, type: "select", options: ["Option 1"] } : { ...base, type: t };
                     setState((s) => ({ ...s, customQuestions: next }));
                   }}
-                  className="h-9 rounded-md border border-[--color-border] bg-[--color-surface] px-2 text-sm"
+                  className="h-9 rounded-md border border-[--border] bg-[--surface] px-2 text-sm"
                 >
                   <option value="short_text">Short text</option>
                   <option value="long_text">Long text</option>
@@ -273,14 +273,14 @@ export function EventTypeForm({ existingId, initial }: { existingId?: string; in
 
       {/* Status */}
       <section className="space-y-5">
-        <h2 className="font-display text-xl">Status</h2>
+        <h2 className="text-base">Status</h2>
         <label className="flex items-center gap-3 text-sm">
           <Switch checked={state.active} onCheckedChange={(v) => patch("active", v)} />
           {state.active ? "Active" : "Hidden"}
         </label>
       </section>
 
-      <div className="flex gap-3 pt-4 border-t border-[--color-border]">
+      <div className="flex gap-3 pt-4 border-t border-[--border]">
         <Button type="submit" disabled={pending}>{pending ? "Saving..." : existingId ? "Save changes" : "Create"}</Button>
       </div>
     </form>

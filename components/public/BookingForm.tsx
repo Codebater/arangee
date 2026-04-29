@@ -71,7 +71,7 @@ export function BookingForm({ slug, startUtc, guestTimezone, customQuestions }: 
               required={q.required}
               value={answers[q.id] ?? ""}
               onChange={(e) => setAnswer(q.id, e.target.value)}
-              className="h-9 w-full rounded-md border border-[--color-border] bg-[--color-surface] px-3 text-sm"
+              className="h-9 w-full rounded-md border border-[--border] bg-[--surface] px-3 text-sm"
             >
               <option value="">Choose...</option>
               {q.options.map((o) => <option key={o} value={o}>{o}</option>)}
@@ -81,8 +81,14 @@ export function BookingForm({ slug, startUtc, guestTimezone, customQuestions }: 
           )}
         </div>
       ))}
-      {error && <p className="text-sm text-[--color-danger]">{error}</p>}
-      <Button type="submit" disabled={pending} className="w-full">{pending ? "Scheduling..." : "Schedule event"}</Button>
+      {error && (
+        <p className="rounded-md border border-[--danger]/40 bg-[--danger]/10 px-3 py-2 text-[13px] text-[--danger]">
+          {error}
+        </p>
+      )}
+      <Button type="submit" size="lg" disabled={pending} className="w-full">
+        {pending ? "Scheduling..." : "Schedule event"}
+      </Button>
     </form>
   );
 }

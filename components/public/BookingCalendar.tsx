@@ -7,17 +7,30 @@ import { useRouter } from "next/navigation";
 import { SlotPicker } from "./SlotPicker";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 
-interface Slot { startUtc: string; endUtc: string }
+interface Slot {
+  startUtc: string;
+  endUtc: string;
+}
 
-export function BookingCalendar({ slug, slots, ownerTimezone }: { slug: string; slots: Slot[]; ownerTimezone: string }) {
+export function BookingCalendar({
+  slug,
+  slots,
+  ownerTimezone,
+}: {
+  slug: string;
+  slots: Slot[];
+  ownerTimezone: string;
+}) {
   const [guestTz, setGuestTz] = useState<string>("UTC");
-  useEffect(() => { setGuestTz(Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"); }, []);
+  useEffect(() => {
+    setGuestTz(Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC");
+  }, []);
 
   const days = useMemo(() => {
     const set = new Set<string>();
     for (const s of slots) {
       const z = toZonedTime(new Date(s.startUtc), guestTz);
-      const ymd = `${z.getFullYear()}-${String(z.getMonth()+1).padStart(2,"0")}-${String(z.getDate()).padStart(2,"0")}`;
+      const ymd = `${z.getFullYear()}-${String(z.getMonth() + 1).padStart(2, "0")}-${String(z.getDate()).padStart(2, "0")}`;
       set.add(ymd);
     }
     return set;
@@ -28,37 +41,49 @@ export function BookingCalendar({ slug, slots, ownerTimezone }: { slug: string; 
   const router = useRouter();
 
   const selectedYmd = date
-    ? `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`
+    ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
     : "";
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div>
-        <Calendar
-          mode="single"
-          selected={date}
-          onSelect={(d) => { setDate(d); setSelected(undefined); }}
-          modifiers={{
-            available: (d) => {
-              const ymd = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-              return days.has(ymd);
-            },
-          }}
-          modifiersClassNames={{ available: "font-medium text-[--color-primary]" }}
-          disabled={(d) => {
-            const ymd = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-            return !days.has(ymd);
-          }}
-        />
-        <p className="text-xs text-[--color-ink-muted] mt-3">
-          Detected timezone: <span className="font-mono">{guestTz}</span>
+        <div className="rounded-lg border border-[--border] bg-[--surface] p-2">
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={(d) => {
+              setDate(d);
+              setSelected(undefined);
+            }}
+            modifiers={{
+              available: (d) => {
+                const ymd = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                return days.has(ymd);
+              },
+            }}
+            modifiersClassNames={{ available: "font-medium text-[--primary]" }}
+            disabled={(d) => {
+              const ymd = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+              return !days.has(ymd);
+            }}
+          />
+        </div>
+        <p className="text-[11px] text-[--ink-muted] mt-3 flex items-center gap-1">
+          <span>Timezone</span>
+          <span className="font-mono text-[--ink-soft]">{guestTz}</span>
         </p>
       </div>
       <div className="space-y-4">
-        {!date && <p className="text-sm text-[--color-ink-muted]">Select a date to see available times.</p>}
+        {!date && (
+          <p className="text-[13px] text-[--ink-muted]">
+            Select a date to see available times.
+          </p>
+        )}
         {date && (
           <>
-            <h3 className="font-display text-xl">{formatInTimeZone(date, guestTz, "EEEE, MMMM d")}</h3>
+            <h3 className="text-base">
+              {formatInTimeZone(date, guestTz, "EEEE, MMMM d")}
+            </h3>
             <SlotPicker
               slots={slots}
               selectedDate={selectedYmd}
@@ -68,6 +93,7 @@ export function BookingCalendar({ slug, slots, ownerTimezone }: { slug: string; 
             />
             {selected && (
               <Button
+                size="lg"
                 onClick={async () => {
                   const params = new URLSearchParams(window.location.search);
                   const reschedule = params.get("reschedule");
@@ -84,7 +110,9 @@ export function BookingCalendar({ slug, slots, ownerTimezone }: { slug: string; 
                       alert("Could not reschedule.");
                     }
                   } else {
-                    router.push(`/${slug}/confirm?start=${encodeURIComponent(selected!.startUtc)}&tz=${encodeURIComponent(guestTz)}`);
+                    router.push(
+                      `/${slug}/confirm?start=${encodeURIComponent(selected!.startUtc)}&tz=${encodeURIComponent(guestTz)}`,
+                    );
                   }
                 }}
                 className="w-full"

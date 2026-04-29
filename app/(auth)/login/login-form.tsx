@@ -40,7 +40,7 @@ export function LoginForm() {
         <Label htmlFor="password">Password</Label>
         <Input id="password" name="password" type="password" autoComplete="current-password" required />
       </div>
-      {error && <p className="text-sm text-[--color-danger]">{error}</p>}
+      {error && <p className="text-sm text-[--danger]">{error}</p>}
       <Button type="submit" className="w-full" disabled={pending}>
         {pending ? "Signing in..." : "Sign in"}
       </Button>

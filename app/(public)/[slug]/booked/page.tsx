@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
 import { formatInTimeZone } from "date-fns-tz";
-import { Check } from "lucide-react";
+import { Check, Video } from "lucide-react";
 import { bookings, eventTypes } from "@/lib/collections";
 import { isValidTokenShape } from "@/lib/tokens";
 
@@ -28,22 +28,36 @@ export default async function BookedPage({
   const labelTime = formatInTimeZone(dt, booking.guestTimezone, "h:mm a");
 
   return (
-    <main className="max-w-xl mx-auto px-6 py-20 text-center animate-fade-up">
-      <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[--color-primary-tint] text-[--color-primary]">
-        <Check size={24} />
+    <main className="max-w-md mx-auto px-6 py-20 text-center animate-fade-up">
+      <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[--primary] text-[--primary-foreground]">
+        <Check size={22} strokeWidth={2.5} />
       </div>
-      <h1 className="font-display text-4xl mt-6">You&apos;re booked.</h1>
-      <p className="font-mono mt-3">{labelDate} · {labelTime}</p>
-      <p className="text-sm text-[--color-ink-muted] mt-2">An invite has been sent to {booking.guestEmail}.</p>
-      {booking.meetLink && (
-        <p className="mt-4 text-sm">
-          <a href={booking.meetLink} className="text-[--color-primary] underline">Join Google Meet</a>
-        </p>
-      )}
-      <p className="mt-10 text-sm">
-        Need to make a change?{" "}
-        <a href={`/b/${booking.manageToken}`} className="text-[--color-primary] underline">Manage booking</a>
+      <h1 className="text-3xl mt-6">You&apos;re booked.</h1>
+      <p className="font-mono text-[13px] text-[--ink-soft] mt-3">
+        {labelDate} · {labelTime}
       </p>
+      <p className="text-[13px] text-[--ink-muted] mt-2">
+        An invite was sent to {booking.guestEmail}.
+      </p>
+      {booking.meetLink && (
+        <a
+          href={booking.meetLink}
+          className="mt-6 inline-flex items-center gap-1.5 rounded-md border border-[--border] bg-[--surface] px-3 h-9 text-[13px] text-[--ink] hover:border-[--border-strong] transition-colors duration-150"
+        >
+          <Video size={14} className="text-[--primary]" /> Join Google Meet
+        </a>
+      )}
+      <div className="mt-10 pt-6 border-t border-[--border]">
+        <p className="text-[12px] text-[--ink-muted]">
+          Need to make a change?{" "}
+          <a
+            href={`/b/${booking.manageToken}`}
+            className="text-[--primary] hover:underline underline-offset-4"
+          >
+            Manage booking
+          </a>
+        </p>
+      </div>
     </main>
   );
 }

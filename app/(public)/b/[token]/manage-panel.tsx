@@ -11,16 +11,27 @@ export function ManagePanel({ token, slug }: { token: string; slug: string }) {
   const router = useRouter();
 
   if (done) {
-    return <p className="text-sm">This booking has been cancelled.</p>;
+    return (
+      <p className="text-[13px] text-[--ink-muted]">This booking has been cancelled.</p>
+    );
   }
 
   return (
-    <div className="space-y-4">
-      <Button onClick={() => router.push(`/${slug}?reschedule=${token}`)}>Reschedule</Button>
+    <div className="flex flex-col gap-2">
+      <Button
+        className="w-full"
+        onClick={() => router.push(`/${slug}?reschedule=${token}`)}
+      >
+        Reschedule
+      </Button>
       <Button
         variant="outline"
+        className="w-full"
         onClick={() => {
-          if (!confirming) { setConfirming(true); return; }
+          if (!confirming) {
+            setConfirming(true);
+            return;
+          }
           start(async () => {
             const res = await fetch(`/api/bookings/${token}`, { method: "DELETE" });
             if (res.ok) setDone(true);

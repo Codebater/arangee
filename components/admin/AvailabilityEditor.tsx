@@ -51,13 +51,13 @@ export function AvailabilityEditor({ initial }: { initial: Editable }) {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-xl">Weekly hours</h2>
-        <div className="rounded-xl border border-[--color-border] divide-y divide-[--color-border]">
+        <h2 className="text-base">Weekly hours</h2>
+        <div className="rounded-lg border border-[--border] divide-y divide-[--border]">
           {state.weeklyHours.map((d) => (
             <div key={d.dayOfWeek} className="p-4 flex flex-col md:flex-row md:items-start gap-4">
-              <div className="w-16 font-mono text-sm tabular text-[--color-ink-muted]">{dayNames[d.dayOfWeek]}</div>
+              <div className="w-16 font-mono text-sm tabular text-[--ink-muted]">{dayNames[d.dayOfWeek]}</div>
               <div className="flex-1 space-y-2">
-                {d.intervals.length === 0 && <p className="text-xs text-[--color-ink-muted]">Unavailable</p>}
+                {d.intervals.length === 0 && <p className="text-xs text-[--ink-muted]">Unavailable</p>}
                 {d.intervals.map((iv, idx) => (
                   <div key={idx} className="flex items-center gap-2">
                     <Input
@@ -105,15 +105,15 @@ export function AvailabilityEditor({ initial }: { initial: Editable }) {
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-xl">Date overrides</h2>
+          <h2 className="text-base">Date overrides</h2>
           <Button type="button" variant="outline" size="sm" onClick={addOverride}>
             <Plus size={14} className="mr-1" /> Add override
           </Button>
         </div>
         <div className="space-y-3">
-          {state.dateOverrides.length === 0 && <p className="text-sm text-[--color-ink-muted]">No overrides.</p>}
+          {state.dateOverrides.length === 0 && <p className="text-sm text-[--ink-muted]">No overrides.</p>}
           {state.dateOverrides.map((o, oi) => (
-            <div key={oi} className="rounded-lg border border-[--color-border] p-3 space-y-2">
+            <div key={oi} className="rounded-lg border border-[--border] p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <Input
                   className="w-44 font-mono"
@@ -133,7 +133,7 @@ export function AvailabilityEditor({ initial }: { initial: Editable }) {
                   <Trash2 size={14} />
                 </Button>
               </div>
-              {o.intervals.length === 0 && <p className="text-xs text-[--color-ink-muted]">Blocked entirely</p>}
+              {o.intervals.length === 0 && <p className="text-xs text-[--ink-muted]">Blocked entirely</p>}
               {o.intervals.map((iv, idx) => (
                 <div key={idx} className="flex items-center gap-2">
                   <Input
@@ -174,7 +174,7 @@ export function AvailabilityEditor({ initial }: { initial: Editable }) {
         </div>
       </section>
 
-      <div className="sticky bottom-4 bg-[--color-background] py-4 -mx-2 px-2 border-t border-[--color-border]">
+      <div className="sticky bottom-4 bg-[--bg] py-4 -mx-2 px-2 border-t border-[--border]">
         <Button type="submit" disabled={pending}>{pending ? "Saving..." : "Save availability"}</Button>
       </div>
     </form>

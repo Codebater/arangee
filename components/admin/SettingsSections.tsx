@@ -36,10 +36,19 @@ export function GoogleSection({
   selectedId: string | null;
 }) {
   const [pending, start] = useTransition();
+  const statusColor =
+    status === "ACTIVE"
+      ? "bg-[--success]/15 text-[--success]"
+      : status === "EXPIRED" || status === "FAILED"
+        ? "bg-[--danger]/15 text-[--danger]"
+        : "bg-[--surface-hover] text-[--ink-muted]";
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <span className="text-xs uppercase tracking-wide rounded-full px-2 py-1 bg-[--color-primary-tint] text-[--color-primary]">
+        <span
+          className={`inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.08em] rounded-full px-2 py-0.5 ${statusColor}`}
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-current" />
           {status ?? "Not connected"}
         </span>
       </div>
@@ -57,7 +66,7 @@ export function GoogleSection({
                 const cal = calendars.find((c) => c.id === e.target.value);
                 if (cal) start(() => setActiveCalendar(cal.id, cal.summary));
               }}
-              className="h-9 w-full rounded-md border border-[--color-border] bg-[--color-surface] px-3 text-sm"
+              className="h-9 w-full rounded-md border border-[--border] bg-[--surface] px-3 text-sm"
             >
               {calendars.map((c) => (
                 <option key={c.id} value={c.id}>{c.summary}{c.primary ? " (primary)" : ""}</option>
