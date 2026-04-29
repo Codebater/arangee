@@ -26,9 +26,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ token: booking.manageToken });
   } catch (err) {
     if (err instanceof BookingError) {
+      console.error("[bookings] BookingError", err.code, err.message);
       const status = err.code === "slot_taken" ? 409 : err.code === "not_found" ? 404 : err.code === "calendar" ? 503 : 400;
       return NextResponse.json({ error: err.code, message: err.message }, { status });
     }
-    return NextResponse.json({ error: "server" }, { status: 500 });
+    console.error("[bookings] unexpected error:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: "server", message }, { status: 500 });
   }
 }

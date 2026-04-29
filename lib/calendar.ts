@@ -115,6 +115,8 @@ export async function createCalendarEvent(
   calendarId: string,
   input: CreateEventInput,
 ): Promise<CreatedEvent> {
+  const hours = Math.floor(input.durationMinutes / 60);
+  const minutes = input.durationMinutes % 60;
   const res = await composio().tools.execute("GOOGLECALENDAR_CREATE_EVENT", {
     userId,
     arguments: {
@@ -123,8 +125,9 @@ export async function createCalendarEvent(
       description: input.description,
       start_datetime: input.startUtc.toISOString(),
       timezone: "UTC",
-      event_duration_minutes: input.durationMinutes,
-      attendees: input.attendees.map((a) => ({ email: a.email, displayName: a.displayName })),
+      event_duration_hour: hours,
+      event_duration_minutes: minutes,
+      attendees: input.attendees.map((a) => a.email),
       create_meeting_room: input.withMeet,
       send_updates: "all",
     },
