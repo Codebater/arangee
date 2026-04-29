@@ -70,6 +70,10 @@ export async function getBusyTimes(
   return busy.map((b) => ({ start: new Date(b.start), end: new Date(b.end) }));
 }
 
+// ---------------------------------------------------------------------------
+// Write API
+// ---------------------------------------------------------------------------
+
 export interface CreateEventInput {
   summary: string;
   description: string;
