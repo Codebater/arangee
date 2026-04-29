@@ -134,16 +134,30 @@ export async function createCalendarEvent(
     dangerouslySkipVersionCheck: true,
   });
   if (!res.successful) throw new CalendarConnectionError(res.error ?? "create_event failed");
-  const data = res.data as {
-    id?: string;
-    htmlLink?: string;
-    hangoutLink?: string;
-    conferenceData?: { entryPoints?: Array<{ entryPointType: string; uri: string }> };
-  };
-  const meetEntry = data.conferenceData?.entryPoints?.find((e) => e.entryPointType === "video");
-  const meetLink = data.hangoutLink ?? meetEntry?.uri ?? null;
-  if (!data.id) throw new CalendarConnectionError("create_event: missing event id");
-  return { googleEventId: data.id, meetLink };
+  const raw = res.data as Record<string, unknown>;
+  if (process.env.NODE_ENV !== "production") {
+    console.log("[calendar] CREATE_EVENT response keys:", Object.keys(raw));
+  }
+  // Composio sometimes wraps the API response under .response_data / .event / .data
+  const event = (raw.response_data ?? raw.event ?? raw.data ?? raw) as Record<string, unknown>;
+
+  const id =
+    (event.id as string | undefined) ??
+    (event.event_id as string | undefined) ??
+    (event.eventId as string | undefined);
+
+  const hangoutLink = event.hangoutLink as string | undefined;
+  const conferenceData = event.conferenceData as
+    | { entryPoints?: Array<{ entryPointType: string; uri: string }> }
+    | undefined;
+  const meetEntry = conferenceData?.entryPoints?.find((e) => e.entryPointType === "video");
+  const meetLink = hangoutLink ?? meetEntry?.uri ?? null;
+
+  if (!id) {
+    console.error("[calendar] CREATE_EVENT response (no id found):", JSON.stringify(raw, null, 2));
+    throw new CalendarConnectionError("create_event: missing event id");
+  }
+  return { googleEventId: id, meetLink };
 }
 
 export async function deleteCalendarEvent(userId: string, calendarId: string, eventId: string) {
