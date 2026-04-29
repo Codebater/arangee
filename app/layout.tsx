@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -23,6 +23,11 @@ export const metadata: Metadata = {
   title: "Kalendly",
   description: "Schedule a meeting.",
   icons: { icon: "/icon.svg" },
+  manifest: "/manifest.json",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#5B2AB8",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

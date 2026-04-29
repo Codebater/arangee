@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { notFound } from "next/navigation";
 import { eventTypes, integrations, availability, bookings } from "@/lib/collections";
 import { computeSlots } from "@/lib/availability";

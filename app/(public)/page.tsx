@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { eventTypes, users } from "@/lib/collections";
 import { Wordmark } from "@/components/brand/Wordmark";

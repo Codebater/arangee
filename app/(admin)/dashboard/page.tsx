@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { bootstrap } from "@/lib/bootstrap";
 import { bookings, integrations } from "@/lib/collections";

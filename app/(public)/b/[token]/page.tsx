@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { notFound } from "next/navigation";
 import { formatInTimeZone } from "date-fns-tz";
 import { bookings } from "@/lib/collections";

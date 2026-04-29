@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { ObjectId } from "mongodb";
 import { notFound } from "next/navigation";
 import { EventTypeForm } from "@/components/admin/EventTypeForm";

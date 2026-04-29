@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { ObjectId } from "mongodb";
 import { users, integrations } from "@/lib/collections";
 import { requireAdmin } from "@/lib/auth-helpers";
