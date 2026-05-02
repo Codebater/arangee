@@ -22,8 +22,17 @@ const items = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-export function Sidebar({ name, username }: { name: string; username: string }) {
+export function Sidebar({
+  name,
+  username,
+  avatarImageId,
+}: {
+  name: string;
+  username: string;
+  avatarImageId: string | null;
+}) {
   const pathname = usePathname();
+  const initial = (name || username).slice(0, 1).toUpperCase();
   return (
     <aside className="sticky top-0 hidden h-screen border-r border-border bg-bg md:flex md:w-60 md:flex-col">
       <div className="border-b border-border px-5 py-6">
@@ -61,17 +70,32 @@ export function Sidebar({ name, username }: { name: string; username: string }) 
           );
         })}
       </nav>
-      <div className="flex items-center justify-between gap-2 border-t border-border px-3 py-3">
+      <div className="flex items-center gap-2 border-t border-border px-3 py-3">
         <Link
-          href={`/${username}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="min-w-0 flex-1 truncate font-mono text-[11px] uppercase tracking-[0.08em] text-ink-muted transition-colors duration-150 hover:text-ink"
-          title="Open public profile"
+          href="/account"
+          className={`group flex min-w-0 flex-1 items-center gap-2.5 rounded-md px-1 py-1 transition-colors duration-150 hover:bg-surface-hover ${
+            pathname.startsWith("/account") ? "bg-surface-hover" : ""
+          }`}
+          title="Account"
         >
-          @{username}
+          {avatarImageId ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={`/api/images/${avatarImageId}`}
+              alt={name}
+              className="h-8 w-8 shrink-0 rounded-full object-cover"
+            />
+          ) : (
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[12px] font-semibold text-primary">
+              {initial}
+            </span>
+          )}
+          <div className="min-w-0 flex-1 leading-tight">
+            <div className="truncate text-[13px] font-medium text-ink">{name}</div>
+            <div className="truncate font-mono text-[10px] text-ink-muted">@{username}</div>
+          </div>
         </Link>
-        <div className="flex items-center gap-0.5">
+        <div className="flex shrink-0 items-center gap-0.5">
           <ThemeToggle />
           <button
             type="button"

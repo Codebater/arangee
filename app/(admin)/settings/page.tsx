@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { integrations } from "@/lib/collections";
 import { requireUser } from "@/lib/auth-helpers";
 import { listCalendars } from "@/lib/calendar";
-import { ProfileSection, GoogleSection } from "@/components/admin/SettingsSections";
+import { GoogleSection } from "@/components/admin/SettingsSections";
 import { AppearanceSection } from "@/components/admin/AppearanceSection";
 import { BrandingSection } from "@/components/admin/BrandingSection";
 
@@ -93,15 +93,6 @@ export default async function SettingsPage() {
       <div className="border-t border-border" />
 
       <SettingsCard
-        title="Profile"
-        description="Public name and timezone shown on your booking pages."
-      >
-        <ProfileSection name={user.name} bio={user.bio} tz={user.defaultTimezone} />
-      </SettingsCard>
-
-      <div className="border-t border-border" />
-
-      <SettingsCard
         title="Google Calendar"
         description="Source of truth for availability and where bookings are written."
       >
@@ -115,22 +106,6 @@ export default async function SettingsPage() {
 
       <div className="border-t border-border" />
 
-      <SettingsCard
-        title="Password"
-        description="Server-side credential pinned to env."
-      >
-        <p className="text-[13px] leading-relaxed text-ink-soft">
-          Edit{" "}
-          <code className="rounded bg-surface-hover px-1 py-0.5 font-mono text-[12px] text-ink">
-            ADMIN_PASSWORD
-          </code>{" "}
-          in{" "}
-          <code className="rounded bg-surface-hover px-1 py-0.5 font-mono text-[12px] text-ink">
-            .env.local
-          </code>{" "}
-          and restart the dev server.
-        </p>
-      </SettingsCard>
     </div>
   );
 }

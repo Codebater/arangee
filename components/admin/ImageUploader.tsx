@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Loader2, Trash2, Upload } from "lucide-react";
+import { Loader2, Trash2, Upload, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { deleteBrandingImage } from "@/server-actions/branding";
+import { TenorPicker } from "./TenorPicker";
 
 interface Props {
   kind: "avatar" | "banner";
@@ -17,6 +18,7 @@ export function ImageUploader({ kind, currentImageId }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [pending, start] = useTransition();
+  const [tenorOpen, setTenorOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -80,7 +82,7 @@ export function ImageUploader({ kind, currentImageId }: Props) {
       <input
         ref={inputRef}
         type="file"
-        accept="image/png,image/jpeg,image/webp"
+        accept="image/png,image/jpeg,image/webp,image/gif"
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];
@@ -88,10 +90,20 @@ export function ImageUploader({ kind, currentImageId }: Props) {
           e.currentTarget.value = "";
         }}
       />
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Button type="button" variant="outline" size="sm" onClick={pickFile} className="gap-1.5">
           <Upload size={13} />
           {previewUrl ? "Replace" : "Upload"}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setTenorOpen(true)}
+          className="gap-1.5"
+        >
+          <Sparkles size={13} />
+          Pick GIF
         </Button>
         {previewUrl && (
           <Button
@@ -115,9 +127,15 @@ export function ImageUploader({ kind, currentImageId }: Props) {
       {error && <p className="text-[12px] text-danger">{error}</p>}
       <p className="text-[11.5px] text-ink-muted">
         {isAvatar
-          ? "PNG, JPEG, or WebP. We'll resize to 256×256."
-          : "PNG, JPEG, or WebP. Resized to 1600×500 max."}
+          ? "PNG, JPEG, WebP, or GIF. Static images resize to 256×256; GIFs upload as-is (≤ 6 MB)."
+          : "PNG, JPEG, WebP, or GIF. Static images resize to 1600×240; GIFs upload as-is (≤ 6 MB)."}
       </p>
+      <TenorPicker
+        open={tenorOpen}
+        onClose={() => setTenorOpen(false)}
+        kind={kind}
+        onPicked={(r) => setPreviewUrl(`${r.url}?v=${r.id}`)}
+      />
     </div>
   );
 }

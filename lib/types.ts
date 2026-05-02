@@ -196,7 +196,7 @@ export interface PendingBookingDoc {
 export interface ImageDoc {
   _id: ObjectId;
   ownerUserId: ObjectId;
-  contentType: "image/png" | "image/jpeg" | "image/webp";
+  contentType: "image/png" | "image/jpeg" | "image/webp" | "image/gif";
   data: Buffer;
   sizeBytes: number;
   width: number;

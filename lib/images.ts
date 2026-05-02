@@ -3,8 +3,15 @@ import { ObjectId } from "mongodb";
 import { images, users } from "./collections";
 import type { ImageDoc, UserDoc } from "./types";
 
-const MAX_INPUT_BYTES = 5 * 1024 * 1024;
-const ALLOWED_MIMES = new Set(["image/png", "image/jpeg", "image/jpg", "image/webp"]);
+const MAX_INPUT_BYTES = 8 * 1024 * 1024;
+const MAX_GIF_BYTES = 6 * 1024 * 1024;
+const ALLOWED_MIMES = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/jpg",
+  "image/webp",
+  "image/gif",
+]);
 
 const TARGETS = {
   avatar: { maxW: 256, maxH: 256, quality: 80 },
@@ -17,7 +24,7 @@ export interface ProcessedImage {
   buffer: Buffer;
   width: number;
   height: number;
-  contentType: "image/webp";
+  contentType: ImageDoc["contentType"];
   sizeBytes: number;
 }
 
@@ -25,15 +32,36 @@ export async function processUpload(
   file: File,
   kind: ImageKind,
 ): Promise<ProcessedImage> {
-  if (file.size > MAX_INPUT_BYTES) {
-    throw new Error(`Image must be smaller than ${Math.round(MAX_INPUT_BYTES / 1024 / 1024)} MB.`);
-  }
   if (!ALLOWED_MIMES.has(file.type)) {
-    throw new Error("Only PNG, JPEG, or WebP files are accepted.");
+    throw new Error("Only PNG, JPEG, WebP, or GIF files are accepted.");
   }
-  const target = TARGETS[kind];
+  const isGif = file.type === "image/gif";
+  const limit = isGif ? MAX_GIF_BYTES : MAX_INPUT_BYTES;
+  if (file.size > limit) {
+    throw new Error(
+      `${isGif ? "GIF" : "Image"} must be smaller than ${Math.round(limit / 1024 / 1024)} MB.`,
+    );
+  }
   const arrayBuffer = await file.arrayBuffer();
   const input = Buffer.from(arrayBuffer);
+  return processBuffer(input, file.type, kind);
+}
+
+export async function processBuffer(
+  input: Buffer,
+  mime: string,
+  kind: ImageKind,
+): Promise<ProcessedImage> {
+  if (mime === "image/gif") {
+    return {
+      buffer: input,
+      contentType: "image/gif",
+      sizeBytes: input.length,
+      width: 0,
+      height: 0,
+    };
+  }
+  const target = TARGETS[kind];
   const pipeline = sharp(input, { failOn: "none" })
     .rotate()
     .resize({
