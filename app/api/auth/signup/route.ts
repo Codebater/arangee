@@ -24,31 +24,52 @@ export async function POST(req: Request) {
   const { email, username, password, name } = parsed.data;
   const u = await users();
 
-  const conflict = await u.findOne({ $or: [{ email }, { username }] });
-  if (conflict) {
-    const which = conflict.email === email ? "email" : "username";
-    return NextResponse.json(
-      { error: `That ${which} is already taken.` },
-      { status: 409 },
-    );
+  const usernameOwner = await u.findOne({ username });
+  const emailOwner = await u.findOne({ email });
+
+  if (usernameOwner && (!emailOwner || !usernameOwner._id.equals(emailOwner._id))) {
+    return NextResponse.json({ error: "That username is already taken." }, { status: 409 });
+  }
+  if (emailOwner && emailOwner.passwordHash) {
+    return NextResponse.json({ error: "That email is already registered." }, { status: 409 });
   }
 
   const passwordHash = await hashPassword(password);
-  const userId = new ObjectId();
   const now = new Date();
-  await u.insertOne({
-    _id: userId,
-    email,
-    username,
-    name,
-    bio: null,
-    defaultTimezone: "UTC",
-    passwordHash,
-    emailVerifiedAt: null,
-    plan: "free",
-    createdAt: now,
-    updatedAt: now,
-  });
+  let userId: ObjectId;
+
+  if (emailOwner) {
+    userId = emailOwner._id;
+    await u.updateOne(
+      { _id: userId },
+      {
+        $set: {
+          username,
+          name,
+          passwordHash,
+          emailVerifiedAt: now,
+          plan: emailOwner.plan ?? "free",
+          updatedAt: now,
+        },
+      },
+    );
+    return NextResponse.json({ ok: true, upgraded: true });
+  } else {
+    userId = new ObjectId();
+    await u.insertOne({
+      _id: userId,
+      email,
+      username,
+      name,
+      bio: null,
+      defaultTimezone: "UTC",
+      passwordHash,
+      emailVerifiedAt: null,
+      plan: "free",
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
 
   const token = randomBytes(32).toString("base64url");
   await (await verificationTokens()).insertOne({

@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2, ArrowRight, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
 export function SignupForm() {
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [pending, start] = useTransition();
@@ -27,6 +29,11 @@ export function SignupForm() {
       if (!res.ok) {
         const j = (await res.json().catch(() => ({}))) as { error?: string };
         setError(j.error || "Signup failed.");
+        return;
+      }
+      const j = (await res.json().catch(() => ({}))) as { upgraded?: boolean };
+      if (j.upgraded) {
+        router.push("/login?verified=1");
         return;
       }
       setDone(true);
