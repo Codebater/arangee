@@ -9,6 +9,7 @@ import {
   profileCardSchema,
   profileLinksSchema,
   profileBadgesSchema,
+  tierBadgesSchema,
 } from "@/lib/validation";
 import { removeImageForUser } from "@/lib/images";
 import { ALLOWED_TOKEN_KEYS, COLOR_VALUE_RE } from "@/lib/theme-tokens";
@@ -88,6 +89,19 @@ export async function saveProfileLinks(payload: unknown) {
     cleaned.length
       ? { $set: { links: cleaned, updatedAt: new Date() } }
       : { $unset: { links: "" }, $set: { updatedAt: new Date() } },
+  );
+  revalidatePath("/account");
+  revalidatePath(`/${user.username}`);
+}
+
+export async function saveTierBadges(payload: unknown) {
+  const { user } = await requireUser();
+  const parsed = tierBadgesSchema.parse(payload);
+  await (await users()).updateOne(
+    { _id: user._id },
+    parsed.length
+      ? { $set: { tierBadges: parsed, updatedAt: new Date() } }
+      : { $unset: { tierBadges: "" }, $set: { updatedAt: new Date() } },
   );
   revalidatePath("/account");
   revalidatePath(`/${user.username}`);

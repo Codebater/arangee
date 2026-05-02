@@ -74,6 +74,13 @@ export interface ProfileBadge {
   color: BadgeColor;
 }
 
+export type TierBadgeType =
+  | "free"
+  | "pro"
+  | "king"
+  | "supporter"
+  | "developer";
+
 export interface UserDoc {
   _id: ObjectId;
   email: string;
@@ -86,6 +93,7 @@ export interface UserDoc {
   plan: "free";
   links?: ProfileLink[];
   badges?: ProfileBadge[];
+  tierBadges?: TierBadgeType[];
   branding?: UserBranding;
   payments?: UserPaymentConnections;
   createdAt: Date;

@@ -104,7 +104,8 @@ export default async function BookingPage({
         host.branding?.profileCard ||
         host.bio ||
         (host.badges?.length ?? 0) > 0 ||
-        (host.links?.length ?? 0) > 0) && (
+        (host.links?.length ?? 0) > 0 ||
+        (host.tierBadges?.length ?? 0) > 0) && (
         <ProfileHeader
           name={host.name}
           username={host.username}
@@ -114,6 +115,7 @@ export default async function BookingPage({
           profileCardTemplate={host.branding?.profileCard?.template ?? null}
           badges={host.badges ?? []}
           links={host.links ?? []}
+          tierBadges={host.tierBadges ?? []}
         />
       )}
 

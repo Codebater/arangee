@@ -171,6 +171,16 @@ export const profileBadgeSchema = z.object({
 
 export const profileBadgesSchema = z.array(profileBadgeSchema).max(8);
 
+export const tierBadgeSchema = z.enum([
+  "free",
+  "pro",
+  "king",
+  "supporter",
+  "developer",
+]);
+
+export const tierBadgesSchema = z.array(tierBadgeSchema).max(5);
+
 export const nowpaymentsKeysSchema = z.object({
   apiKey: z.string().min(8).max(200),
   ipnSecret: z.string().min(8).max(200),

@@ -1,7 +1,8 @@
 import { getProfileCard } from "@/lib/profile-cards";
 import { ProfileBadges } from "./ProfileBadges";
 import { ProfileLinks } from "./ProfileLinks";
-import type { ProfileBadge, ProfileLink } from "@/lib/types";
+import { TierBadges } from "./TierBadge";
+import type { ProfileBadge, ProfileLink, TierBadgeType } from "@/lib/types";
 
 interface Props {
   name: string;
@@ -12,6 +13,7 @@ interface Props {
   profileCardTemplate?: string | null;
   badges?: ProfileBadge[];
   links?: ProfileLink[];
+  tierBadges?: TierBadgeType[];
   showUsername?: boolean;
 }
 
@@ -24,6 +26,7 @@ export function ProfileHeader({
   profileCardTemplate,
   badges,
   links,
+  tierBadges,
   showUsername = true,
 }: Props) {
   const hasBanner = Boolean(bannerImageId);
@@ -65,8 +68,9 @@ export function ProfileHeader({
                 @{username}
               </p>
             )}
-            <h1 className="mt-1 text-[28px] leading-tight tracking-[-0.025em] text-ink md:text-[32px]">
-              {name}
+            <h1 className="mt-1 flex flex-wrap items-center gap-2 text-[28px] leading-tight tracking-[-0.025em] text-ink md:text-[32px]">
+              <span>{name}</span>
+              <TierBadges badges={tierBadges} />
             </h1>
             {bio && (
               <p className="mt-3 max-w-prose whitespace-pre-wrap text-[14px] leading-relaxed text-ink-soft">

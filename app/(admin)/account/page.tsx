@@ -7,6 +7,7 @@ import { ProfileSection } from "@/components/admin/SettingsSections";
 import { BrandingSection } from "@/components/admin/BrandingSection";
 import { LinksEditor } from "@/components/admin/LinksEditor";
 import { BadgesEditor } from "@/components/admin/BadgesEditor";
+import { TierBadgesEditor } from "@/components/admin/TierBadgesEditor";
 
 function Section({
   title,
@@ -67,7 +68,16 @@ export default async function AccountPage() {
 
       <div className="border-t border-border" />
 
-      <Section title="Badges" description="Short tags shown next to your name.">
+      <Section
+        title="Tier badges"
+        description="Discord-style icon badges shown next to your name."
+      >
+        <TierBadgesEditor initial={user.tierBadges ?? []} />
+      </Section>
+
+      <div className="border-t border-border" />
+
+      <Section title="Custom badges" description="Short text tags shown under your name.">
         <BadgesEditor initial={user.badges ?? []} />
       </Section>
 

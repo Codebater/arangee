@@ -57,6 +57,7 @@ export default async function ProfilePage({
         profileCardTemplate={user.branding?.profileCard?.template ?? null}
         badges={user.badges ?? []}
         links={user.links ?? []}
+        tierBadges={user.tierBadges ?? []}
       />
 
       <section className="mt-2">
