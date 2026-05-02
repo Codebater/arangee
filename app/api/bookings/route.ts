@@ -16,6 +16,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const booking = await createBooking({
+      username: parsed.data.username,
       slug: parsed.data.slug,
       startUtc: new Date(parsed.data.startUtc),
       guestName: parsed.data.guestName,

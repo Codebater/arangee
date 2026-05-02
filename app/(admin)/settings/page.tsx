@@ -1,8 +1,7 @@
 export const dynamic = "force-dynamic";
 
-import { ObjectId } from "mongodb";
-import { users, integrations } from "@/lib/collections";
-import { requireAdmin } from "@/lib/auth-helpers";
+import { integrations } from "@/lib/collections";
+import { requireUser } from "@/lib/auth-helpers";
 import { listCalendars } from "@/lib/calendar";
 import { ProfileSection, GoogleSection } from "@/components/admin/SettingsSections";
 import { AppearanceSection } from "@/components/admin/AppearanceSection";
@@ -30,9 +29,7 @@ function SettingsCard({
 }
 
 export default async function SettingsPage() {
-  const session = await requireAdmin();
-  const user = await (await users()).findOne({ _id: new ObjectId(session.user.id) });
-  if (!user) throw new Error("User missing");
+  const { user } = await requireUser();
   const integ = await (await integrations()).findOne({
     userId: user._id,
     provider: "google_calendar",
@@ -41,7 +38,7 @@ export default async function SettingsPage() {
   let calError: string | null = null;
   if (integ?.status === "ACTIVE") {
     try {
-      cals = await listCalendars(session.user.id);
+      cals = await listCalendars(user._id.toString());
       if (cals.length === 0) {
         calError =
           "Connected, but no calendars were returned. Check the dev terminal for the raw response.";

@@ -22,7 +22,7 @@ const items = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-export function Sidebar({ name }: { name: string }) {
+export function Sidebar({ name, username }: { name: string; username: string }) {
   const pathname = usePathname();
   return (
     <aside className="sticky top-0 hidden h-screen border-r border-border bg-bg md:flex md:w-60 md:flex-col">
@@ -62,9 +62,15 @@ export function Sidebar({ name }: { name: string }) {
         })}
       </nav>
       <div className="flex items-center justify-between gap-2 border-t border-border px-3 py-3">
-        <div className="min-w-0 flex-1 truncate font-mono text-[11px] uppercase tracking-[0.08em] text-ink-muted">
-          {name}
-        </div>
+        <Link
+          href={`/${username}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="min-w-0 flex-1 truncate font-mono text-[11px] uppercase tracking-[0.08em] text-ink-muted transition-colors duration-150 hover:text-ink"
+          title="Open public profile"
+        >
+          @{username}
+        </Link>
         <div className="flex items-center gap-0.5">
           <ThemeToggle />
           <button

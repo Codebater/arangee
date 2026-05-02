@@ -1,14 +1,14 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { z } from "zod";
+import { ObjectId } from "mongodb";
 import { env } from "@/lib/env";
-import { bootstrap } from "@/lib/bootstrap";
 import { users } from "@/lib/collections";
+import { verifyPassword } from "@/lib/users";
+import { loginSchema } from "@/lib/validation";
 
-const credentialsSchema = z.object({
-  email: z.email(),
-  password: z.string().min(1),
-});
+class EmailNotVerifiedError extends CredentialsSignin {
+  code = "email_not_verified";
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: env().NEXTAUTH_SECRET,
@@ -20,15 +20,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(raw) {
-        const parsed = credentialsSchema.safeParse(raw);
+        const parsed = loginSchema.safeParse(raw);
         if (!parsed.success) return null;
-        if (parsed.data.email !== env().ADMIN_EMAIL) return null;
-        if (parsed.data.password !== env().ADMIN_PASSWORD) return null;
-
-        await bootstrap();
-        const user = await (await users()).findOne({ email: parsed.data.email });
+        const user = await (await users()).findOne({
+          email: parsed.data.email.toLowerCase(),
+        });
         if (!user) return null;
-
+        const ok = await verifyPassword(parsed.data.password, user.passwordHash);
+        if (!ok) return null;
+        if (!user.emailVerifiedAt) throw new EmailNotVerifiedError();
         return { id: user._id.toString(), email: user.email, name: user.name };
       },
     }),
@@ -46,3 +46,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
 });
+
+export { ObjectId };

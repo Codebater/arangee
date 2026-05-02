@@ -3,13 +3,13 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { ArrowRight, CalendarPlus } from "lucide-react";
 import { formatInTimeZone } from "date-fns-tz";
-import { bootstrap } from "@/lib/bootstrap";
+import { requireUser } from "@/lib/auth-helpers";
 import { bookings, integrations } from "@/lib/collections";
 import { KpiTile } from "@/components/admin/KpiTile";
 import { Button } from "@/components/ui/button";
 
 export default async function DashboardPage() {
-  await bootstrap();
+  const { user } = await requireUser();
   const col = await bookings();
   const now = new Date();
   const weekStart = new Date(now);
@@ -18,11 +18,11 @@ export default async function DashboardPage() {
   const sevenAhead = new Date(now.getTime() + 7 * 24 * 3600_000);
 
   const [thisWeek, next7, thisMonth, upcoming, integ] = await Promise.all([
-    col.countDocuments({ status: "confirmed", startUtc: { $gte: weekStart, $lt: now } }),
-    col.countDocuments({ status: "confirmed", startUtc: { $gte: now, $lt: sevenAhead } }),
-    col.countDocuments({ status: "confirmed", startUtc: { $gte: monthStart } }),
-    col.find({ status: "confirmed", startUtc: { $gte: now } }).sort({ startUtc: 1 }).limit(6).toArray(),
-    (await integrations()).findOne({ provider: "google_calendar" }),
+    col.countDocuments({ userId: user._id, status: "confirmed", startUtc: { $gte: weekStart, $lt: now } }),
+    col.countDocuments({ userId: user._id, status: "confirmed", startUtc: { $gte: now, $lt: sevenAhead } }),
+    col.countDocuments({ userId: user._id, status: "confirmed", startUtc: { $gte: monthStart } }),
+    col.find({ userId: user._id, status: "confirmed", startUtc: { $gte: now } }).sort({ startUtc: 1 }).limit(6).toArray(),
+    (await integrations()).findOne({ userId: user._id, provider: "google_calendar" }),
   ]);
 
   return (

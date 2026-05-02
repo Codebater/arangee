@@ -2,23 +2,23 @@
 
 import { redirect } from "next/navigation";
 import { ObjectId } from "mongodb";
-import { requireAdmin } from "@/lib/auth-helpers";
-import { initiateGoogleConnection, getConnection, listCalendars } from "@/lib/calendar";
+import { requireUser } from "@/lib/auth-helpers";
+import { initiateGoogleConnection } from "@/lib/calendar";
 import { integrations } from "@/lib/collections";
 import { env } from "@/lib/env";
 
 export async function startGoogleConnect() {
-  const session = await requireAdmin();
-  const userId = session.user.id;
+  const { user } = await requireUser();
+  const userId = user._id.toString();
   const callbackUrl = `${env().APP_URL}/api/integrations/google/callback`;
   const { redirectUrl, connectionId } = await initiateGoogleConnection(userId, callbackUrl);
 
   await (await integrations()).updateOne(
-    { userId: new ObjectId(userId), provider: "google_calendar" },
+    { userId: user._id, provider: "google_calendar" },
     {
       $setOnInsert: {
         _id: new ObjectId(),
-        userId: new ObjectId(userId),
+        userId: user._id,
         provider: "google_calendar",
         composioUserId: userId,
         connectedAt: new Date(),
@@ -38,17 +38,17 @@ export async function startGoogleConnect() {
 }
 
 export async function setActiveCalendar(calendarId: string, calendarSummary: string) {
-  const session = await requireAdmin();
+  const { user } = await requireUser();
   await (await integrations()).updateOne(
-    { userId: new ObjectId(session.user.id), provider: "google_calendar" },
+    { userId: user._id, provider: "google_calendar" },
     { $set: { calendarId, calendarSummary, lastCheckedAt: new Date() } },
   );
 }
 
 export async function disconnectGoogle() {
-  const session = await requireAdmin();
+  const { user } = await requireUser();
   await (await integrations()).deleteOne({
-    userId: new ObjectId(session.user.id),
+    userId: user._id,
     provider: "google_calendar",
   });
 }
