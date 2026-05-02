@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { Loader2, Trash2, Upload, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { deleteBrandingImage } from "@/server-actions/branding";
-import { TenorPicker } from "./TenorPicker";
+import { GifPicker } from "./GifPicker";
 
 interface Props {
   kind: "avatar" | "banner";
@@ -18,7 +18,7 @@ export function ImageUploader({ kind, currentImageId }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [pending, start] = useTransition();
-  const [tenorOpen, setTenorOpen] = useState(false);
+  const [gifOpen, setGifOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -99,7 +99,7 @@ export function ImageUploader({ kind, currentImageId }: Props) {
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => setTenorOpen(true)}
+          onClick={() => setGifOpen(true)}
           className="gap-1.5"
         >
           <Sparkles size={13} />
@@ -130,9 +130,9 @@ export function ImageUploader({ kind, currentImageId }: Props) {
           ? "PNG, JPEG, WebP, or GIF. Static images resize to 256×256; GIFs upload as-is (≤ 6 MB)."
           : "PNG, JPEG, WebP, or GIF. Static images resize to 1600×240; GIFs upload as-is (≤ 6 MB)."}
       </p>
-      <TenorPicker
-        open={tenorOpen}
-        onClose={() => setTenorOpen(false)}
+      <GifPicker
+        open={gifOpen}
+        onClose={() => setGifOpen(false)}
         kind={kind}
         onPicked={(r) => setPreviewUrl(`${r.url}?v=${r.id}`)}
       />

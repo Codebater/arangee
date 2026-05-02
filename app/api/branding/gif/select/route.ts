@@ -5,12 +5,13 @@ import { processBuffer, saveImageForUser, type ImageKind } from "@/lib/images";
 export const runtime = "nodejs";
 
 const ALLOWED_HOSTS = new Set([
-  "media.tenor.com",
-  "media1.tenor.com",
-  "media2.tenor.com",
-  "media3.tenor.com",
-  "tenor.googleapis.com",
-  "c.tenor.com",
+  "media.giphy.com",
+  "media0.giphy.com",
+  "media1.giphy.com",
+  "media2.giphy.com",
+  "media3.giphy.com",
+  "media4.giphy.com",
+  "i.giphy.com",
 ]);
 
 export async function POST(req: Request) {

@@ -19,7 +19,7 @@ interface Props {
   kind: "avatar" | "banner";
 }
 
-export function TenorPicker({ open, onClose, onPicked, kind }: Props) {
+export function GifPicker({ open, onClose, onPicked, kind }: Props) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Result[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -51,11 +51,11 @@ export function TenorPicker({ open, onClose, onPicked, kind }: Props) {
     setSearching(true);
     setError(null);
     try {
-      const res = await fetch(`/api/branding/tenor?q=${encodeURIComponent(q)}`);
+      const res = await fetch(`/api/branding/gif?q=${encodeURIComponent(q)}`);
       if (!res.ok) {
         const j = (await res.json().catch(() => ({}))) as { error?: string };
-        if (j.error === "tenor_not_configured") {
-          setError("Tenor isn't configured. Set TENOR_API_KEY to enable GIF search.");
+        if (j.error === "giphy_not_configured") {
+          setError("GIF search needs a Giphy API key. Set GIPHY_API_KEY in Vercel.");
         } else {
           setError("GIF search is unavailable right now.");
         }
@@ -70,7 +70,7 @@ export function TenorPicker({ open, onClose, onPicked, kind }: Props) {
 
   function pick(r: Result) {
     start(async () => {
-      const res = await fetch("/api/branding/tenor/select", {
+      const res = await fetch("/api/branding/gif/select", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ url: r.fullUrl, kind }),
@@ -101,7 +101,7 @@ export function TenorPicker({ open, onClose, onPicked, kind }: Props) {
           <Search size={14} className="text-ink-muted" />
           <Input
             autoFocus
-            placeholder="Search GIFs (Tenor)…"
+            placeholder="Search GIFs (Giphy)…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="h-8 border-0 bg-transparent shadow-none focus-visible:ring-0"
@@ -119,7 +119,7 @@ export function TenorPicker({ open, onClose, onPicked, kind }: Props) {
             </div>
           ) : results.length === 0 ? (
             <div className="px-2 py-12 text-center text-[12.5px] text-ink-muted">
-              {query.trim() ? "No results." : "Type to search Tenor."}
+              {query.trim() ? "No results." : "Type to search Giphy."}
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-2 md:grid-cols-4">
@@ -143,7 +143,7 @@ export function TenorPicker({ open, onClose, onPicked, kind }: Props) {
           )}
         </div>
         <div className="border-t border-border bg-bg-elevated px-4 py-2 text-center font-mono text-[10px] uppercase tracking-[0.12em] text-ink-muted">
-          GIFs powered by Tenor
+          GIFs powered by Giphy
         </div>
       </div>
     </div>
