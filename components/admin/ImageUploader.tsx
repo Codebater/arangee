@@ -50,7 +50,7 @@ export function ImageUploader({ kind, currentImageId }: Props) {
   const isAvatar = kind === "avatar";
   const containerClass = isAvatar
     ? "relative h-24 w-24 overflow-hidden rounded-full border border-border bg-bg-elevated"
-    : "relative aspect-[16/5] w-full overflow-hidden rounded-lg border border-border bg-bg-elevated";
+    : "relative aspect-[20/3] w-full overflow-hidden rounded-lg border border-border bg-bg-elevated";
 
   return (
     <div className="space-y-3">

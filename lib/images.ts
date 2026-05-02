@@ -8,7 +8,7 @@ const ALLOWED_MIMES = new Set(["image/png", "image/jpeg", "image/jpg", "image/we
 
 const TARGETS = {
   avatar: { maxW: 256, maxH: 256, quality: 80 },
-  banner: { maxW: 1600, maxH: 500, quality: 76 },
+  banner: { maxW: 1600, maxH: 240, quality: 76 },
 } as const;
 
 export type ImageKind = "avatar" | "banner";

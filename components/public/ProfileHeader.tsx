@@ -23,11 +23,11 @@ export function ProfileHeader({
       <div className="overflow-hidden rounded-xl border border-border bg-surface">
         {hasBanner ? (
           <div
-            className="aspect-[16/5] w-full bg-cover bg-center"
+            className="aspect-[20/3] w-full bg-cover bg-center"
             style={{ backgroundImage: `url(/api/images/${bannerImageId})` }}
           />
         ) : (
-          <div className="aspect-[16/5] w-full bg-gradient-to-br from-primary-tint via-bg-elevated to-surface" />
+          <div className="aspect-[20/3] w-full bg-gradient-to-br from-primary-tint via-bg-elevated to-surface" />
         )}
         <div className="relative px-5 pb-5 pt-3">
           {hasAvatar && (
