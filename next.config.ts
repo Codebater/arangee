@@ -21,7 +21,7 @@ const securityHeaders = [
       "default-src 'self'",
       scriptSrc,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "img-src 'self' data: blob:",
+      "img-src 'self' data: blob: https://*.giphy.com",
       "font-src 'self' https://fonts.gstatic.com",
       connectSrc,
       "frame-ancestors 'none'",
