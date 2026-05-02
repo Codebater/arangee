@@ -11,7 +11,6 @@ import type { EventTypeDoc, EventColor, CustomQuestion, LocationSpec } from "@/l
 import { createEventType, updateEventType } from "@/server-actions/event-types";
 
 type FormState = {
-  slug: string;
   title: string;
   description: string;
   durationMinutes: number;
@@ -55,7 +54,6 @@ export function EventTypeForm({
 }) {
   const [state, setState] = useState<FormState>(
     initial ?? {
-      slug: "",
       title: "",
       description: "",
       durationMinutes: 30,
@@ -110,30 +108,18 @@ export function EventTypeForm({
 
   return (
     <form action={submit} className="space-y-12">
-      <Section title="Basics" description="The headline and identity for this event type.">
-        <div className="grid gap-5 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              value={state.title}
-              onChange={(e) => patch("title", e.target.value)}
-              placeholder="30 min discovery"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="slug">URL slug</Label>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[12px] text-ink-muted">/</span>
-              <Input
-                id="slug"
-                value={state.slug}
-                onChange={(e) => patch("slug", e.target.value.toLowerCase())}
-                placeholder="discovery"
-                className="font-mono"
-              />
-            </div>
-          </div>
+      <Section title="Basics" description="Title and a short pitch.">
+        <div className="space-y-2">
+          <Label htmlFor="title">Title</Label>
+          <Input
+            id="title"
+            value={state.title}
+            onChange={(e) => patch("title", e.target.value)}
+            placeholder="30 min discovery"
+          />
+          <p className="text-[11.5px] text-ink-muted">
+            A short URL is generated automatically when you save.
+          </p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="description">Description</Label>

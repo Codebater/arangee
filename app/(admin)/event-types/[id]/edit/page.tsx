@@ -13,7 +13,6 @@ export default async function EditEventType({ params }: { params: Promise<{ id: 
   if (!evt) notFound();
 
   const initial = {
-    slug: evt.slug,
     title: evt.title,
     description: evt.description,
     durationMinutes: evt.durationMinutes,

@@ -6,6 +6,18 @@ import { redirect } from "next/navigation";
 import { eventTypes } from "@/lib/collections";
 import { eventTypeFormSchema } from "@/lib/validation";
 import { requireUser } from "@/lib/auth-helpers";
+import { generateEventSlug } from "@/lib/slug";
+import type { UserDoc } from "@/lib/types";
+
+async function uniqueSlug(userId: UserDoc["_id"]): Promise<string> {
+  const col = await eventTypes();
+  for (let i = 0; i < 6; i++) {
+    const candidate = generateEventSlug();
+    const taken = await col.findOne({ userId, slug: candidate }, { projection: { _id: 1 } });
+    if (!taken) return candidate;
+  }
+  return generateEventSlug(10);
+}
 
 export async function createEventType(formData: FormData) {
   const { user } = await requireUser();
@@ -13,9 +25,11 @@ export async function createEventType(formData: FormData) {
   const col = await eventTypes();
   const last = await col.find({ userId: user._id }).sort({ position: -1 }).limit(1).toArray();
   const position = (last[0]?.position ?? 0) + 1;
+  const slug = await uniqueSlug(user._id);
   await col.insertOne({
     _id: new ObjectId(),
     userId: user._id,
+    slug,
     ...parsed,
     position,
     createdAt: new Date(),

@@ -52,7 +52,6 @@ export const eventPaymentConfigSchema = z.object({
 });
 
 export const eventTypeFormSchema = z.object({
-  slug: z.string().regex(slugRe),
   title: z.string().min(1).max(120),
   description: z.string().max(2000).default(""),
   durationMinutes: z.number().int().min(5).max(8 * 60),
