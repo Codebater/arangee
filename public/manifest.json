@@ -1,10 +1,10 @@
 {
-  "name": "Kalendly",
-  "short_name": "Kalendly",
+  "name": "WeSchedule",
+  "short_name": "WeSchedule",
   "icons": [
     { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }
   ],
-  "theme_color": "#5B2AB8",
+  "theme_color": "#3B82F6",
   "background_color": "#FAFAF7",
   "display": "standalone"
 }

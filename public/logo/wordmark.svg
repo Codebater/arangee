@@ -1,8 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 56" role="img" aria-label="Kalendly" fill="currentColor">
-  <g transform="translate(4 14) scale(1.166)">
-    <rect x="4.5" y="3.5" width="3" height="17" rx="0.5"/>
-    <path d="M7.5 12 L18.5 3.5 L20.5 5.2 L9.5 13.5 Z"/>
-    <path d="M7.5 11 L9.5 11 L20.5 19.3 L18.5 21 Z"/>
-  </g>
-  <text x="34" y="40" font-family="ui-sans-serif, system-ui, sans-serif" font-size="36" font-weight="600" letter-spacing="-1.5">alendly</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 80" role="img" aria-label="WeSchedule" fill="none">
+  <rect x="10" y="15" width="50" height="50" rx="12" stroke="currentColor" stroke-width="3"/>
+  <line x1="20" y1="15" x2="20" y2="5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  <line x1="50" y1="15" x2="50" y2="5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="35" cy="40" r="6" fill="#3B82F6"/>
+  <text x="80" y="50" font-family="ui-sans-serif, system-ui, Inter, Helvetica, Arial, sans-serif" font-size="28" font-weight="600" letter-spacing="2" fill="currentColor">WESCHEDULE</text>
 </svg>

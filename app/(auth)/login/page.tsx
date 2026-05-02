@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { LoginForm } from "./login-form";
 
-export const metadata = { title: "Sign in · Kalendly" };
+export const metadata = { title: "Sign in · WeSchedule" };
 
 export default function LoginPage() {
   return (
