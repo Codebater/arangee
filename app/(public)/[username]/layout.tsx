@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { findUserByUsername } from "@/lib/scope";
 import { isReservedUsername } from "@/lib/users";
 import { buildThemeOverrideCSS } from "@/lib/theme-tokens";
+import { PUBLIC_FONT_VARIABLES, fontFamilyFor, isFontChoice } from "@/lib/fonts";
 
 export default async function UsernameLayout({
   params,
@@ -19,17 +20,18 @@ export default async function UsernameLayout({
     user.branding?.themeTokensLight,
     user.branding?.themeTokensDark,
   );
+  const fontKey = user.branding?.font;
+  const fontFamily = fontKey && isFontChoice(fontKey) ? fontFamilyFor(fontKey) : undefined;
 
   return (
-    <>
+    <div className={PUBLIC_FONT_VARIABLES} style={fontFamily ? { fontFamily } : undefined}>
       {css && (
         <style
-          // The CSS string only contains values that pass COLOR_VALUE_RE,
-          // so it can't escape the <style> context.
+          // CSS values are constrained to COLOR_VALUE_RE before this runs.
           dangerouslySetInnerHTML={{ __html: css }}
         />
       )}
       {children}
-    </>
+    </div>
   );
 }

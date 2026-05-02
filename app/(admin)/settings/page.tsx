@@ -78,6 +78,15 @@ export default async function SettingsPage() {
           bannerImageId={user.branding?.bannerImageId?.toString() ?? null}
           themeTokensLight={user.branding?.themeTokensLight ?? {}}
           themeTokensDark={user.branding?.themeTokensDark ?? {}}
+          profileCard={
+            (user.branding?.profileCard?.template as
+              | "aurora"
+              | "constellation"
+              | "ribbons"
+              | "synthwave"
+              | undefined) ?? null
+          }
+          font={user.branding?.font ?? null}
         />
       </SettingsCard>
 

@@ -99,13 +99,17 @@ export default async function BookingPage({
         </div>
       )}
 
-      {(host.branding?.avatarImageId || host.branding?.bannerImageId || host.bio) && (
+      {(host.branding?.avatarImageId ||
+        host.branding?.bannerImageId ||
+        host.branding?.profileCard ||
+        host.bio) && (
         <ProfileHeader
           name={host.name}
           username={host.username}
           bio={host.bio}
           avatarImageId={host.branding?.avatarImageId?.toString() ?? null}
           bannerImageId={host.branding?.bannerImageId?.toString() ?? null}
+          profileCardTemplate={host.branding?.profileCard?.template ?? null}
         />
       )}
 

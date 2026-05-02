@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth-helpers";
 import { users } from "@/lib/collections";
-import { brandingFormSchema } from "@/lib/validation";
+import { brandingFormSchema, fontChoiceSchema, profileCardSchema } from "@/lib/validation";
 import { removeImageForUser } from "@/lib/images";
 import { ALLOWED_TOKEN_KEYS, COLOR_VALUE_RE } from "@/lib/theme-tokens";
 
@@ -44,6 +44,42 @@ export async function saveBrandingTokens(payload: unknown) {
 export async function deleteBrandingImage(kind: "avatar" | "banner") {
   const { user } = await requireUser();
   await removeImageForUser(user, kind);
+  revalidatePath("/settings");
+  revalidatePath(`/${user.username}`);
+}
+
+export async function saveFont(value: string | null) {
+  const { user } = await requireUser();
+  if (value === null || value === "") {
+    await (await users()).updateOne(
+      { _id: user._id },
+      { $unset: { "branding.font": "" }, $set: { updatedAt: new Date() } },
+    );
+  } else {
+    const parsed = fontChoiceSchema.parse(value);
+    await (await users()).updateOne(
+      { _id: user._id },
+      { $set: { "branding.font": parsed, updatedAt: new Date() } },
+    );
+  }
+  revalidatePath("/settings");
+  revalidatePath(`/${user.username}`);
+}
+
+export async function saveProfileCard(payload: unknown) {
+  const { user } = await requireUser();
+  if (payload === null || payload === undefined) {
+    await (await users()).updateOne(
+      { _id: user._id },
+      { $unset: { "branding.profileCard": "" }, $set: { updatedAt: new Date() } },
+    );
+  } else {
+    const parsed = profileCardSchema.parse(payload);
+    await (await users()).updateOne(
+      { _id: user._id },
+      { $set: { "branding.profileCard": parsed, updatedAt: new Date() } },
+    );
+  }
   revalidatePath("/settings");
   revalidatePath(`/${user.username}`);
 }

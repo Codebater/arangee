@@ -133,6 +133,12 @@ export const brandingFormSchema = z.object({
   themeTokensDark: z.record(z.string().max(40), z.string().max(40).regex(colorValueRe)).optional(),
 });
 
+export const fontChoiceSchema = z.enum(["geist", "inter", "manrope", "ibm-plex"]);
+
+export const profileCardSchema = z.object({
+  template: z.enum(["aurora", "constellation", "ribbons", "synthwave"]),
+});
+
 export const nowpaymentsKeysSchema = z.object({
   apiKey: z.string().min(8).max(200),
   ipnSecret: z.string().min(8).max(200),

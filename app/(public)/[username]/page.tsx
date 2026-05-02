@@ -54,6 +54,7 @@ export default async function ProfilePage({
         bio={user.bio}
         avatarImageId={user.branding?.avatarImageId?.toString() ?? null}
         bannerImageId={user.branding?.bannerImageId?.toString() ?? null}
+        profileCardTemplate={user.branding?.profileCard?.template ?? null}
       />
 
       <section className="mt-2">

@@ -4,6 +4,10 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { ImageUploader } from "./ImageUploader";
 import { ThemeBuilder } from "./ThemeBuilder";
+import { ProfileCardPicker } from "./ProfileCardPicker";
+import { FontPicker } from "./FontPicker";
+import type { ProfileCardId } from "@/lib/profile-cards";
+import type { FontChoice } from "@/lib/fonts";
 
 interface Props {
   username: string;
@@ -11,6 +15,8 @@ interface Props {
   bannerImageId: string | null;
   themeTokensLight: Record<string, string>;
   themeTokensDark: Record<string, string>;
+  profileCard: ProfileCardId | null;
+  font: FontChoice | null;
 }
 
 export function BrandingSection({
@@ -19,10 +25,12 @@ export function BrandingSection({
   bannerImageId,
   themeTokensLight,
   themeTokensDark,
+  profileCard,
+  font,
 }: Props) {
   const [themeOpen, setThemeOpen] = useState(false);
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-7 max-w-2xl">
       <div className="space-y-2">
         <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-muted">
           Banner
@@ -35,6 +43,20 @@ export function BrandingSection({
           Avatar
         </p>
         <ImageUploader kind="avatar" currentImageId={avatarImageId} />
+      </div>
+
+      <div className="space-y-2">
+        <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-muted">
+          Animated card
+        </p>
+        <ProfileCardPicker current={profileCard} />
+      </div>
+
+      <div className="space-y-2">
+        <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-muted">
+          Public font
+        </p>
+        <FontPicker current={font} />
       </div>
 
       <div className="space-y-2">

@@ -1,9 +1,12 @@
+import { getProfileCard } from "@/lib/profile-cards";
+
 interface Props {
   name: string;
   username: string;
   bio: string | null;
   avatarImageId: string | null;
   bannerImageId: string | null;
+  profileCardTemplate?: string | null;
   showUsername?: boolean;
 }
 
@@ -13,15 +16,21 @@ export function ProfileHeader({
   bio,
   avatarImageId,
   bannerImageId,
+  profileCardTemplate,
   showUsername = true,
 }: Props) {
   const hasBanner = Boolean(bannerImageId);
   const hasAvatar = Boolean(avatarImageId);
-  if (!hasBanner && !hasAvatar && !bio && !showUsername) return null;
+  const Card = profileCardTemplate ? getProfileCard(profileCardTemplate) : null;
+  if (!hasBanner && !hasAvatar && !bio && !showUsername && !Card) return null;
   return (
     <header className="mb-8">
       <div className="overflow-hidden rounded-xl border border-border bg-surface">
-        {hasBanner ? (
+        {Card ? (
+          <div className="relative aspect-[20/3] w-full">
+            <Card />
+          </div>
+        ) : hasBanner ? (
           <div
             className="aspect-[20/3] w-full bg-cover bg-center"
             style={{ backgroundImage: `url(/api/images/${bannerImageId})` }}
