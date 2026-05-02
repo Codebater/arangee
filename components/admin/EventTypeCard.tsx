@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { toggleActive, deleteEventType } from "@/server-actions/event-types";
@@ -40,7 +40,11 @@ export function EventTypeCard({
 }: Props) {
   const [pending, start] = useTransition();
   const [copied, setCopied] = useState(false);
-  const link = `${appUrl}/${username}/${slug}`;
+  const [origin, setOrigin] = useState(appUrl);
+  useEffect(() => {
+    if (typeof window !== "undefined") setOrigin(window.location.origin);
+  }, []);
+  const link = `${origin}/${username}/${slug}`;
 
   function copy() {
     navigator.clipboard.writeText(link).then(() => {
