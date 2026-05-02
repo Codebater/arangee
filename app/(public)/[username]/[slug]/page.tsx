@@ -1,7 +1,9 @@
 export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
-import { eventTypes, integrations, availability, bookings } from "@/lib/collections";
+import { availability, integrations, bookings } from "@/lib/collections";
+import { resolveUserAndEventType } from "@/lib/scope";
+import { isReservedUsername } from "@/lib/users";
 import { computeSlots } from "@/lib/availability";
 import { getBusyTimes } from "@/lib/calendar";
 import { ymdInTz } from "@/lib/timezone";
@@ -14,19 +16,22 @@ export default async function BookingPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ username: string; slug: string }>;
   searchParams: Promise<{ reschedule?: string }>;
 }) {
-  const { slug } = await params;
+  const { username, slug } = await params;
   const sp = await searchParams;
-  const evt = await (await eventTypes()).findOne({ slug, active: true });
-  if (!evt) notFound();
+  if (isReservedUsername(username)) notFound();
+  const resolved = await resolveUserAndEventType(username, slug);
+  if (!resolved) notFound();
+  const { user: host, eventType: evt } = resolved;
 
   const integ = await (await integrations()).findOne({
+    userId: host._id,
     provider: "google_calendar",
     status: "ACTIVE",
   });
-  const avail = integ ? await (await availability()).findOne({ userId: integ.userId }) : null;
+  const avail = integ ? await (await availability()).findOne({ userId: host._id }) : null;
 
   let slots: { startUtc: string; endUtc: string }[] = [];
   let unavailable = false;
@@ -45,6 +50,7 @@ export default async function BookingPage({
       if (evt.rules.maxBookingsPerDay !== null) {
         const list = await (await bookings())
           .find({
+            userId: host._id,
             eventTypeSlug: slug,
             status: "confirmed",
             startUtc: { $gte: now, $lt: horizon },
@@ -93,6 +99,7 @@ export default async function BookingPage({
       )}
 
       <BookingShell
+        username={host.username}
         slug={slug}
         title={evt.title}
         description={evt.description}

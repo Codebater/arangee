@@ -4,7 +4,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { formatInTimeZone } from "date-fns-tz";
 import { ArrowLeft, Clock, Calendar as CalIcon, Globe2 } from "lucide-react";
-import { eventTypes } from "@/lib/collections";
+import { resolveUserAndEventType } from "@/lib/scope";
+import { isReservedUsername } from "@/lib/users";
 import { BookingForm } from "@/components/public/BookingForm";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
@@ -20,17 +21,19 @@ export default async function ConfirmPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ username: string; slug: string }>;
   searchParams: Promise<{ start?: string; tz?: string }>;
 }) {
-  const { slug } = await params;
+  const { username, slug } = await params;
   const sp = await searchParams;
   const startIso = sp.start;
   const tz = sp.tz ?? "UTC";
   if (!startIso) notFound();
+  if (isReservedUsername(username)) notFound();
 
-  const evt = await (await eventTypes()).findOne({ slug, active: true });
-  if (!evt) notFound();
+  const resolved = await resolveUserAndEventType(username, slug);
+  if (!resolved) notFound();
+  const { eventType: evt } = resolved;
 
   const dt = new Date(startIso);
   const labelDate = formatInTimeZone(dt, tz, "EEEE, MMMM d");
@@ -41,7 +44,7 @@ export default async function ConfirmPage({
     <main className="relative mx-auto max-w-5xl px-6 pb-16 pt-6 md:pt-10 animate-fade-in">
       <div className="mb-10 flex items-center justify-between">
         <Link
-          href={`/${slug}`}
+          href={`/${username}/${slug}`}
           className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 -ml-1.5 text-[12px] text-ink-muted transition-colors duration-150 hover:bg-surface-hover hover:text-ink"
         >
           <ArrowLeft size={13} strokeWidth={2} />
@@ -99,6 +102,7 @@ export default async function ConfirmPage({
             One step away
           </p>
           <BookingForm
+            username={username}
             slug={slug}
             startUtc={startIso}
             guestTimezone={tz}

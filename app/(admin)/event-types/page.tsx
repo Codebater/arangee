@@ -3,12 +3,17 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { Plus, ListChecks } from "lucide-react";
 import { eventTypes } from "@/lib/collections";
+import { requireUser } from "@/lib/auth-helpers";
 import { Button } from "@/components/ui/button";
 import { EventTypeCard } from "@/components/admin/EventTypeCard";
 import { env } from "@/lib/env";
 
 export default async function EventTypesPage() {
-  const list = await (await eventTypes()).find().sort({ position: 1 }).toArray();
+  const { user } = await requireUser();
+  const list = await (await eventTypes())
+    .find({ userId: user._id })
+    .sort({ position: 1 })
+    .toArray();
   const activeCount = list.filter((e) => e.active).length;
 
   return (
@@ -61,6 +66,7 @@ export default async function EventTypesPage() {
               active={e.active}
               description={e.description}
               appUrl={env().APP_URL}
+              username={user.username}
             />
           ))}
         </div>

@@ -24,6 +24,7 @@ interface Props {
   active: boolean;
   description: string;
   appUrl: string;
+  username: string;
 }
 
 export function EventTypeCard({
@@ -35,10 +36,11 @@ export function EventTypeCard({
   active,
   description,
   appUrl,
+  username,
 }: Props) {
   const [pending, start] = useTransition();
   const [copied, setCopied] = useState(false);
-  const link = `${appUrl}/${slug}`;
+  const link = `${appUrl}/${username}/${slug}`;
 
   function copy() {
     navigator.clipboard.writeText(link).then(() => {

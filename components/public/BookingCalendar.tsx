@@ -18,10 +18,12 @@ function ymd(d: Date) {
 }
 
 export function BookingCalendar({
+  username,
   slug,
   slots,
   guestTz,
 }: {
+  username: string;
   slug: string;
   slots: Slot[];
   guestTz: string;
@@ -66,14 +68,14 @@ export function BookingCalendar({
         });
         if (res.ok) {
           const { token } = await res.json();
-          router.push(`/${slug}/booked?token=${token}`);
+          router.push(`/${username}/${slug}/booked?token=${token}`);
         } else {
           setError("Could not reschedule. Please try another time.");
         }
         return;
       }
       router.push(
-        `/${slug}/confirm?start=${encodeURIComponent(selected.startUtc)}&tz=${encodeURIComponent(guestTz)}`,
+        `/${username}/${slug}/confirm?start=${encodeURIComponent(selected.startUtc)}&tz=${encodeURIComponent(guestTz)}`,
       );
     });
   }

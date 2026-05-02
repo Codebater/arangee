@@ -10,13 +10,14 @@ import { Button } from "@/components/ui/button";
 import type { CustomQuestion } from "@/lib/types";
 
 interface Props {
+  username: string;
   slug: string;
   startUtc: string;
   guestTimezone: string;
   customQuestions: CustomQuestion[];
 }
 
-export function BookingForm({ slug, startUtc, guestTimezone, customQuestions }: Props) {
+export function BookingForm({ username, slug, startUtc, guestTimezone, customQuestions }: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -33,6 +34,7 @@ export function BookingForm({ slug, startUtc, guestTimezone, customQuestions }: 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          username,
           slug,
           startUtc,
           guestTimezone,
@@ -51,7 +53,7 @@ export function BookingForm({ slug, startUtc, guestTimezone, customQuestions }: 
         return;
       }
       const { token } = await res.json();
-      router.push(`/${slug}/booked?token=${token}`);
+      router.push(`/${username}/${slug}/booked?token=${token}`);
     });
   }
 

@@ -19,6 +19,7 @@ interface Slot {
 }
 
 interface Props {
+  username: string;
   slug: string;
   title: string;
   description: string;
@@ -30,6 +31,7 @@ interface Props {
 }
 
 export function BookingShell({
+  username,
   slug,
   title,
   description,
@@ -114,7 +116,7 @@ export function BookingShell({
             </p>
           </div>
         ) : (
-          <BookingCalendar slug={slug} slots={slots} guestTz={guestTz} />
+          <BookingCalendar username={username} slug={slug} slots={slots} guestTz={guestTz} />
         )}
       </section>
     </div>

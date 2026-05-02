@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { bookings } from "@/lib/collections";
+import { requireUser } from "@/lib/auth-helpers";
 import { BookingsTable } from "@/components/admin/BookingsTable";
 
 const tabs = [
@@ -14,15 +15,16 @@ export default async function BookingsPage({
 }: {
   searchParams: Promise<{ tab?: string }>;
 }) {
+  const { user } = await requireUser();
   const sp = await searchParams;
   const tab = (sp.tab ?? "upcoming") as (typeof tabs)[number]["id"];
   const now = new Date();
   const filter =
     tab === "past"
-      ? { status: "confirmed" as const, startUtc: { $lt: now } }
+      ? { userId: user._id, status: "confirmed" as const, startUtc: { $lt: now } }
       : tab === "cancelled"
-        ? { status: { $in: ["cancelled", "rescheduled"] as const } }
-        : { status: "confirmed" as const, startUtc: { $gte: now } };
+        ? { userId: user._id, status: { $in: ["cancelled", "rescheduled"] as const } }
+        : { userId: user._id, status: "confirmed" as const, startUtc: { $gte: now } };
   const list = await (await bookings())
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .find(filter as any)

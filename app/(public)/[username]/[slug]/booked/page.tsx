@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { formatInTimeZone } from "date-fns-tz";
 import { Check, Video, Mail } from "lucide-react";
 import { bookings, eventTypes } from "@/lib/collections";
+import { findUserByUsername } from "@/lib/scope";
+import { isReservedUsername } from "@/lib/users";
 import { isValidTokenShape } from "@/lib/tokens";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
@@ -11,15 +13,23 @@ export default async function BookedPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ username: string; slug: string }>;
   searchParams: Promise<{ token?: string }>;
 }) {
-  const { slug } = await params;
+  const { username, slug } = await params;
   const sp = await searchParams;
   const token = sp.token;
   if (!token || !isValidTokenShape(token)) notFound();
+  if (isReservedUsername(username)) notFound();
 
-  const booking = await (await bookings()).findOne({ manageToken: token, eventTypeSlug: slug });
+  const host = await findUserByUsername(username);
+  if (!host) notFound();
+
+  const booking = await (await bookings()).findOne({
+    userId: host._id,
+    manageToken: token,
+    eventTypeSlug: slug,
+  });
   if (!booking) notFound();
   const evt = await (await eventTypes()).findOne({ _id: booking.eventTypeId });
   if (!evt) notFound();
