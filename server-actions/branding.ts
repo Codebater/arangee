@@ -3,9 +3,16 @@
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth-helpers";
 import { users } from "@/lib/collections";
-import { brandingFormSchema, fontChoiceSchema, profileCardSchema } from "@/lib/validation";
+import {
+  brandingFormSchema,
+  fontChoiceSchema,
+  profileCardSchema,
+  profileLinksSchema,
+  profileBadgesSchema,
+} from "@/lib/validation";
 import { removeImageForUser } from "@/lib/images";
 import { ALLOWED_TOKEN_KEYS, COLOR_VALUE_RE } from "@/lib/theme-tokens";
+import { isValidLinkUrl, normalizeLinkUrl } from "@/lib/link-platforms";
 
 function sanitizeTokens(map: Record<string, string> | undefined): Record<string, string> | undefined {
   if (!map) return undefined;
@@ -63,6 +70,39 @@ export async function saveFont(value: string | null) {
     );
   }
   revalidatePath("/settings");
+  revalidatePath(`/${user.username}`);
+}
+
+export async function saveProfileLinks(payload: unknown) {
+  const { user } = await requireUser();
+  const parsed = profileLinksSchema.parse(payload);
+  const cleaned = parsed
+    .map((link) => {
+      const url = normalizeLinkUrl(link.platform, link.url);
+      if (!isValidLinkUrl(link.platform, url)) return null;
+      return { ...link, url };
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null);
+  await (await users()).updateOne(
+    { _id: user._id },
+    cleaned.length
+      ? { $set: { links: cleaned, updatedAt: new Date() } }
+      : { $unset: { links: "" }, $set: { updatedAt: new Date() } },
+  );
+  revalidatePath("/account");
+  revalidatePath(`/${user.username}`);
+}
+
+export async function saveProfileBadges(payload: unknown) {
+  const { user } = await requireUser();
+  const parsed = profileBadgesSchema.parse(payload);
+  await (await users()).updateOne(
+    { _id: user._id },
+    parsed.length
+      ? { $set: { badges: parsed, updatedAt: new Date() } }
+      : { $unset: { badges: "" }, $set: { updatedAt: new Date() } },
+  );
+  revalidatePath("/account");
   revalidatePath(`/${user.username}`);
 }
 

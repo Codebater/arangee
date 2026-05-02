@@ -55,6 +55,8 @@ export default async function ProfilePage({
         avatarImageId={user.branding?.avatarImageId?.toString() ?? null}
         bannerImageId={user.branding?.bannerImageId?.toString() ?? null}
         profileCardTemplate={user.branding?.profileCard?.template ?? null}
+        badges={user.badges ?? []}
+        links={user.links ?? []}
       />
 
       <section className="mt-2">

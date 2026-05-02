@@ -102,7 +102,9 @@ export default async function BookingPage({
       {(host.branding?.avatarImageId ||
         host.branding?.bannerImageId ||
         host.branding?.profileCard ||
-        host.bio) && (
+        host.bio ||
+        (host.badges?.length ?? 0) > 0 ||
+        (host.links?.length ?? 0) > 0) && (
         <ProfileHeader
           name={host.name}
           username={host.username}
@@ -110,6 +112,8 @@ export default async function BookingPage({
           avatarImageId={host.branding?.avatarImageId?.toString() ?? null}
           bannerImageId={host.branding?.bannerImageId?.toString() ?? null}
           profileCardTemplate={host.branding?.profileCard?.template ?? null}
+          badges={host.badges ?? []}
+          links={host.links ?? []}
         />
       )}
 

@@ -37,6 +37,43 @@ export interface UserPaymentConnections {
   };
 }
 
+export type LinkPlatform =
+  | "website"
+  | "email"
+  | "github"
+  | "twitter"
+  | "linkedin"
+  | "instagram"
+  | "youtube"
+  | "twitch"
+  | "tiktok"
+  | "discord"
+  | "telegram"
+  | "mastodon"
+  | "bluesky"
+  | "custom";
+
+export interface ProfileLink {
+  id: string;
+  platform: LinkPlatform;
+  url: string;
+  label?: string;
+}
+
+export type BadgeColor =
+  | "primary"
+  | "blue"
+  | "green"
+  | "amber"
+  | "rose"
+  | "slate";
+
+export interface ProfileBadge {
+  id: string;
+  label: string;
+  color: BadgeColor;
+}
+
 export interface UserDoc {
   _id: ObjectId;
   email: string;
@@ -47,6 +84,8 @@ export interface UserDoc {
   passwordHash: string;
   emailVerifiedAt: Date | null;
   plan: "free";
+  links?: ProfileLink[];
+  badges?: ProfileBadge[];
   branding?: UserBranding;
   payments?: UserPaymentConnections;
   createdAt: Date;

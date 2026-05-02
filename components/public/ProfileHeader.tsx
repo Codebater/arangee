@@ -1,4 +1,7 @@
 import { getProfileCard } from "@/lib/profile-cards";
+import { ProfileBadges } from "./ProfileBadges";
+import { ProfileLinks } from "./ProfileLinks";
+import type { ProfileBadge, ProfileLink } from "@/lib/types";
 
 interface Props {
   name: string;
@@ -7,6 +10,8 @@ interface Props {
   avatarImageId: string | null;
   bannerImageId: string | null;
   profileCardTemplate?: string | null;
+  badges?: ProfileBadge[];
+  links?: ProfileLink[];
   showUsername?: boolean;
 }
 
@@ -17,12 +22,17 @@ export function ProfileHeader({
   avatarImageId,
   bannerImageId,
   profileCardTemplate,
+  badges,
+  links,
   showUsername = true,
 }: Props) {
   const hasBanner = Boolean(bannerImageId);
   const hasAvatar = Boolean(avatarImageId);
   const Card = profileCardTemplate ? getProfileCard(profileCardTemplate) : null;
-  if (!hasBanner && !hasAvatar && !bio && !showUsername && !Card) return null;
+  const hasBadges = (badges?.length ?? 0) > 0;
+  const hasLinks = (links?.length ?? 0) > 0;
+  if (!hasBanner && !hasAvatar && !bio && !showUsername && !Card && !hasBadges && !hasLinks)
+    return null;
   return (
     <header className="mb-8">
       <div className="overflow-hidden rounded-xl border border-border bg-surface">
@@ -63,6 +73,8 @@ export function ProfileHeader({
                 {bio}
               </p>
             )}
+            {hasBadges && <ProfileBadges badges={badges!} />}
+            {hasLinks && <ProfileLinks links={links!} />}
           </div>
         </div>
       </div>

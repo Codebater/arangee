@@ -5,7 +5,6 @@ import { requireUser } from "@/lib/auth-helpers";
 import { listCalendars } from "@/lib/calendar";
 import { GoogleSection } from "@/components/admin/SettingsSections";
 import { AppearanceSection } from "@/components/admin/AppearanceSection";
-import { BrandingSection } from "@/components/admin/BrandingSection";
 
 function SettingsCard({
   title,
@@ -54,9 +53,16 @@ export default async function SettingsPage() {
     <div className="space-y-10">
       <header className="space-y-2 border-b border-border pb-6">
         <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-muted">
-          Account
+          App
         </p>
         <h1 className="text-[28px] leading-tight tracking-[-0.02em]">Settings</h1>
+        <p className="max-w-2xl text-[13px] text-ink-soft">
+          Looking for your profile, branding, links, or badges? They&apos;re on the{" "}
+          <a href="/account" className="text-ink underline-offset-4 hover:underline">
+            Account page
+          </a>
+          .
+        </p>
       </header>
 
       <SettingsCard
@@ -64,30 +70,6 @@ export default async function SettingsPage() {
         description="Choose how WeSchedule looks to you. System matches your OS preference."
       >
         <AppearanceSection />
-      </SettingsCard>
-
-      <div className="border-t border-border" />
-
-      <SettingsCard
-        title="Branding"
-        description="Avatar, banner, and theme tokens shown on your public booking pages."
-      >
-        <BrandingSection
-          username={user.username}
-          avatarImageId={user.branding?.avatarImageId?.toString() ?? null}
-          bannerImageId={user.branding?.bannerImageId?.toString() ?? null}
-          themeTokensLight={user.branding?.themeTokensLight ?? {}}
-          themeTokensDark={user.branding?.themeTokensDark ?? {}}
-          profileCard={
-            (user.branding?.profileCard?.template as
-              | "aurora"
-              | "constellation"
-              | "ribbons"
-              | "synthwave"
-              | undefined) ?? null
-          }
-          font={user.branding?.font ?? null}
-        />
       </SettingsCard>
 
       <div className="border-t border-border" />
@@ -103,9 +85,6 @@ export default async function SettingsPage() {
           error={calError}
         />
       </SettingsCard>
-
-      <div className="border-t border-border" />
-
     </div>
   );
 }

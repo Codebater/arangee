@@ -139,6 +139,38 @@ export const profileCardSchema = z.object({
   template: z.enum(["aurora", "constellation", "ribbons", "synthwave"]),
 });
 
+export const profileLinkSchema = z.object({
+  id: z.string().min(1).max(40),
+  platform: z.enum([
+    "website",
+    "email",
+    "github",
+    "twitter",
+    "linkedin",
+    "instagram",
+    "youtube",
+    "twitch",
+    "tiktok",
+    "discord",
+    "telegram",
+    "mastodon",
+    "bluesky",
+    "custom",
+  ]),
+  url: z.string().min(1).max(500),
+  label: z.string().min(1).max(40).optional(),
+});
+
+export const profileLinksSchema = z.array(profileLinkSchema).max(12);
+
+export const profileBadgeSchema = z.object({
+  id: z.string().min(1).max(40),
+  label: z.string().min(1).max(24),
+  color: z.enum(["primary", "blue", "green", "amber", "rose", "slate"]),
+});
+
+export const profileBadgesSchema = z.array(profileBadgeSchema).max(8);
+
 export const nowpaymentsKeysSchema = z.object({
   apiKey: z.string().min(8).max(200),
   ipnSecret: z.string().min(8).max(200),
