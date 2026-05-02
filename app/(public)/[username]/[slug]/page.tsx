@@ -8,6 +8,7 @@ import { computeSlots } from "@/lib/availability";
 import { getBusyTimes } from "@/lib/calendar";
 import { ymdInTz } from "@/lib/timezone";
 import { BookingShell } from "@/components/public/BookingShell";
+import { ProfileHeader } from "@/components/public/ProfileHeader";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 export const revalidate = 30;
@@ -96,6 +97,16 @@ export default async function BookingPage({
           </span>
           Pick a new time below to reschedule your booking.
         </div>
+      )}
+
+      {(host.branding?.avatarImageId || host.branding?.bannerImageId || host.bio) && (
+        <ProfileHeader
+          name={host.name}
+          username={host.username}
+          bio={host.bio}
+          avatarImageId={host.branding?.avatarImageId?.toString() ?? null}
+          bannerImageId={host.branding?.bannerImageId?.toString() ?? null}
+        />
       )}
 
       <BookingShell

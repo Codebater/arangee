@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/auth-helpers";
 import { listCalendars } from "@/lib/calendar";
 import { ProfileSection, GoogleSection } from "@/components/admin/SettingsSections";
 import { AppearanceSection } from "@/components/admin/AppearanceSection";
+import { BrandingSection } from "@/components/admin/BrandingSection";
 
 function SettingsCard({
   title,
@@ -63,6 +64,21 @@ export default async function SettingsPage() {
         description="Choose how WeSchedule looks to you. System matches your OS preference."
       >
         <AppearanceSection />
+      </SettingsCard>
+
+      <div className="border-t border-border" />
+
+      <SettingsCard
+        title="Branding"
+        description="Avatar, banner, and theme tokens shown on your public booking pages."
+      >
+        <BrandingSection
+          username={user.username}
+          avatarImageId={user.branding?.avatarImageId?.toString() ?? null}
+          bannerImageId={user.branding?.bannerImageId?.toString() ?? null}
+          themeTokensLight={user.branding?.themeTokensLight ?? {}}
+          themeTokensDark={user.branding?.themeTokensDark ?? {}}
+        />
       </SettingsCard>
 
       <div className="border-t border-border" />

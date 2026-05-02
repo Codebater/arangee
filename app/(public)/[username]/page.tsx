@@ -6,6 +6,7 @@ import { ArrowRight, Clock, MapPin } from "lucide-react";
 import { findUserByUsername, listActiveEventTypes } from "@/lib/scope";
 import { isReservedUsername } from "@/lib/users";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { ProfileHeader } from "@/components/public/ProfileHeader";
 
 const colorMap: Record<string, string> = {
   iris: "var(--event-iris)",
@@ -47,21 +48,15 @@ export default async function ProfilePage({
         <ThemeToggle />
       </div>
 
-      <header className="space-y-3 border-b border-border pb-8">
-        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-muted">
-          @{user.username}
-        </p>
-        <h1 className="text-[40px] leading-[1.05] tracking-[-0.025em] text-ink md:text-[48px]">
-          {user.name}
-        </h1>
-        {user.bio && (
-          <p className="max-w-prose whitespace-pre-wrap text-[14px] leading-relaxed text-ink-soft">
-            {user.bio}
-          </p>
-        )}
-      </header>
+      <ProfileHeader
+        name={user.name}
+        username={user.username}
+        bio={user.bio}
+        avatarImageId={user.branding?.avatarImageId?.toString() ?? null}
+        bannerImageId={user.branding?.bannerImageId?.toString() ?? null}
+      />
 
-      <section className="mt-8">
+      <section className="mt-2">
         <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-muted">
           Pick a meeting
         </p>
