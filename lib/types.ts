@@ -11,14 +11,55 @@ export type LocationSpec =
   | { type: "phone"; phoneNumber: string }
   | { type: "custom"; customText: string };
 
+export type FontChoice = "geist" | "inter" | "manrope" | "ibm-plex";
+
+export interface UserBranding {
+  avatarImageId?: ObjectId;
+  bannerImageId?: ObjectId;
+  themeTokensLight?: Record<string, string>;
+  themeTokensDark?: Record<string, string>;
+  font?: FontChoice;
+  showBookingMeta?: boolean;
+  profileCard?: { template: string; params?: Record<string, string> };
+}
+
+export interface UserPaymentConnections {
+  stripe?: {
+    accountId: string;
+    chargesEnabled: boolean;
+    detailsSubmitted: boolean;
+    connectedAt: Date;
+  };
+  nowpayments?: {
+    apiKeyEnc: string;
+    ipnSecretEnc: string;
+    connectedAt: Date;
+  };
+}
+
 export interface UserDoc {
   _id: ObjectId;
   email: string;
+  username: string;
   name: string;
   bio: string | null;
   defaultTimezone: string;
+  passwordHash: string;
+  emailVerifiedAt: Date | null;
+  plan: "free";
+  branding?: UserBranding;
+  payments?: UserPaymentConnections;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface VerificationTokenDoc {
+  _id: ObjectId;
+  userId: ObjectId;
+  token: string;
+  kind: "email_verify" | "password_reset";
+  expiresAt: Date;
+  createdAt: Date;
 }
 
 export type ConnectionStatus = "ACTIVE" | "EXPIRED" | "FAILED" | "INACTIVE" | "INITIATED";
@@ -36,8 +77,26 @@ export interface IntegrationDoc {
   lastCheckedAt: Date;
 }
 
+export type PaymentProviderId = "stripe" | "nowpayments";
+
+export type RefundPolicy = "full" | "partial" | "none";
+
+export interface EventPaymentConfig {
+  enabled: boolean;
+  provider: PaymentProviderId;
+  amount: number;
+  currency: string;
+  description?: string;
+  refund: {
+    policy: RefundPolicy;
+    partialPercent?: number;
+    cutoffHours?: number;
+  };
+}
+
 export interface EventTypeDoc {
   _id: ObjectId;
+  userId: ObjectId;
   slug: string;
   title: string;
   description: string;
@@ -52,6 +111,7 @@ export interface EventTypeDoc {
     maxBookingsPerDay: number | null;
   };
   customQuestions: CustomQuestion[];
+  payment?: EventPaymentConfig;
   active: boolean;
   position: number;
   createdAt: Date;
@@ -75,8 +135,22 @@ export interface AvailabilityDoc {
 
 export type BookingStatus = "confirmed" | "cancelled" | "rescheduled";
 
+export interface BookingPaymentRecord {
+  provider: PaymentProviderId;
+  sessionId: string;
+  amount: number;
+  currency: string;
+  paidAt: Date;
+  refund?: {
+    id: string;
+    amount: number;
+    refundedAt: Date;
+  };
+}
+
 export interface BookingDoc {
   _id: ObjectId;
+  userId: ObjectId;
   eventTypeSlug: string;
   eventTypeId: ObjectId;
   guestName: string;
@@ -89,7 +163,51 @@ export interface BookingDoc {
   meetLink: string | null;
   manageToken: string;
   status: BookingStatus;
+  payment?: BookingPaymentRecord;
   rescheduledToBookingId: ObjectId | null;
   createdAt: Date;
   cancelledAt: Date | null;
+}
+
+export type PendingBookingStatus = "awaiting" | "completed" | "expired";
+
+export interface PendingBookingDoc {
+  _id: ObjectId;
+  userId: ObjectId;
+  eventTypeId: ObjectId;
+  eventTypeSlug: string;
+  payload: {
+    guestName: string;
+    guestEmail: string;
+    guestTimezone: string;
+    customAnswers: Record<string, string>;
+    startUtc: Date;
+  };
+  provider: PaymentProviderId;
+  sessionId: string;
+  amount: number;
+  currency: string;
+  status: PendingBookingStatus;
+  bookingId: ObjectId | null;
+  expiresAt: Date;
+  createdAt: Date;
+}
+
+export interface ImageDoc {
+  _id: ObjectId;
+  ownerUserId: ObjectId;
+  contentType: "image/png" | "image/jpeg" | "image/webp";
+  data: Buffer;
+  sizeBytes: number;
+  width: number;
+  height: number;
+  kind: "avatar" | "banner";
+  createdAt: Date;
+}
+
+export interface WebhookEventDoc {
+  _id: ObjectId;
+  provider: PaymentProviderId;
+  externalId: string;
+  receivedAt: Date;
 }

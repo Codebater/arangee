@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { usernameSchema } from "./users";
 
 const slugRe = /^[a-z0-9](?:[a-z0-9-]{0,48}[a-z0-9])?$/;
 
@@ -30,6 +31,26 @@ export const locationSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("custom"), customText: z.string().min(1).max(500) }),
 ]);
 
+export const refundPolicySchema = z
+  .object({
+    policy: z.enum(["full", "partial", "none"]),
+    partialPercent: z.number().int().min(0).max(100).optional(),
+    cutoffHours: z.number().int().min(0).max(24 * 30).optional(),
+  })
+  .refine((v) => (v.policy === "partial" ? typeof v.partialPercent === "number" : true), {
+    message: "partialPercent is required when policy is 'partial'",
+    path: ["partialPercent"],
+  });
+
+export const eventPaymentConfigSchema = z.object({
+  enabled: z.boolean(),
+  provider: z.enum(["stripe", "nowpayments"]),
+  amount: z.number().int().min(1).max(10_000_000),
+  currency: z.string().min(2).max(10),
+  description: z.string().max(500).optional(),
+  refund: refundPolicySchema,
+});
+
 export const eventTypeFormSchema = z.object({
   slug: z.string().regex(slugRe),
   title: z.string().min(1).max(120),
@@ -45,6 +66,7 @@ export const eventTypeFormSchema = z.object({
     maxBookingsPerDay: z.number().int().min(1).max(50).nullable(),
   }),
   customQuestions: z.array(customQuestionSchema).max(20),
+  payment: eventPaymentConfigSchema.optional(),
   active: z.boolean(),
 });
 
@@ -82,7 +104,41 @@ export const profileFormSchema = z.object({
   defaultTimezone: z.string().min(1),
 });
 
+export const signupSchema = z.object({
+  email: z.email().max(254),
+  username: usernameSchema,
+  password: z.string().min(8).max(200),
+  name: z.string().min(1).max(80),
+});
+
+export const loginSchema = z.object({
+  email: z.email().max(254),
+  password: z.string().min(1).max(200),
+});
+
+export const forgotSchema = z.object({
+  email: z.email().max(254),
+});
+
+export const resetSchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(8).max(200),
+});
+
+export const brandingFormSchema = z.object({
+  font: z.enum(["geist", "inter", "manrope", "ibm-plex"]).optional(),
+  showBookingMeta: z.boolean().optional(),
+  themeTokensLight: z.record(z.string(), z.string().max(80)).optional(),
+  themeTokensDark: z.record(z.string(), z.string().max(80)).optional(),
+});
+
+export const nowpaymentsKeysSchema = z.object({
+  apiKey: z.string().min(8).max(200),
+  ipnSecret: z.string().min(8).max(200),
+});
+
 export const bookingRequestSchema = z.object({
+  username: usernameSchema,
   slug: z.string().regex(slugRe),
   startUtc: z.iso.datetime(),
   guestName: z.string().min(1).max(80),
