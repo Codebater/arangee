@@ -37,6 +37,30 @@ export interface UserPaymentConnections {
   };
 }
 
+export type SubscriptionStatus =
+  | "active"
+  | "trialing"
+  | "past_due"
+  | "canceled"
+  | "incomplete"
+  | "incomplete_expired"
+  | "unpaid"
+  | "paused";
+
+export interface UserSubscription {
+  stripeCustomerId: string;
+  stripeSubscriptionId: string;
+  status: SubscriptionStatus;
+  currentPeriodEnd: Date | null;
+  cancelAtPeriodEnd: boolean;
+}
+
+export interface UserDonations {
+  totalCents: number;
+  currency: string;
+  latest?: { amount: number; currency: string; paidAt: Date };
+}
+
 export type LinkPlatform =
   | "website"
   | "email"
@@ -90,12 +114,14 @@ export interface UserDoc {
   defaultTimezone: string;
   passwordHash: string;
   emailVerifiedAt: Date | null;
-  plan: "free";
+  plan: "free" | "pro";
   links?: ProfileLink[];
   badges?: ProfileBadge[];
   tierBadges?: TierBadgeType[];
   branding?: UserBranding;
   payments?: UserPaymentConnections;
+  subscription?: UserSubscription;
+  donations?: UserDonations;
   createdAt: Date;
   updatedAt: Date;
 }

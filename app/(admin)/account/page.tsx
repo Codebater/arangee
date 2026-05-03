@@ -8,6 +8,9 @@ import { BrandingSection } from "@/components/admin/BrandingSection";
 import { LinksEditor } from "@/components/admin/LinksEditor";
 import { BadgesEditor } from "@/components/admin/BadgesEditor";
 import { TierBadgesEditor } from "@/components/admin/TierBadgesEditor";
+import { PasswordSection } from "@/components/admin/PasswordSection";
+import { SupportSection } from "@/components/admin/SupportSection";
+import { getEntitledTierBadges, canUploadGif } from "@/lib/tiers";
 
 function Section({
   title,
@@ -31,8 +34,16 @@ function Section({
   );
 }
 
-export default async function AccountPage() {
+export default async function AccountPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ donation?: string }>;
+}) {
   const { user } = await requireUser();
+  const sp = await searchParams;
+  const donationBanner =
+    sp.donation === "success" ? "success" : sp.donation === "cancelled" ? "cancelled" : null;
+  const entitledBadges = getEntitledTierBadges(user);
   const profileCardId =
     (user.branding?.profileCard?.template as
       | "aurora"
@@ -70,9 +81,9 @@ export default async function AccountPage() {
 
       <Section
         title="Tier badges"
-        description="Discord-style icon badges shown next to your name."
+        description="Icon badges shown next to your name. Pro and donation tiers unlock more."
       >
-        <TierBadgesEditor initial={user.tierBadges ?? []} />
+        <TierBadgesEditor initial={user.tierBadges ?? []} entitled={entitledBadges} />
       </Section>
 
       <div className="border-t border-border" />
@@ -101,6 +112,21 @@ export default async function AccountPage() {
           themeTokensDark={user.branding?.themeTokensDark ?? {}}
           profileCard={profileCardId}
           font={user.branding?.font ?? null}
+          allowAvatarGif={canUploadGif(user, "avatar")}
+          allowBannerGif={canUploadGif(user, "banner")}
+        />
+      </Section>
+
+      <div className="border-t border-border" />
+
+      <Section
+        title="Support"
+        description="Tip the project. Donations unlock cosmetic badges (no Pro features)."
+      >
+        <SupportSection
+          totalCents={user.donations?.totalCents ?? 0}
+          currency={user.donations?.currency ?? "EUR"}
+          banner={donationBanner}
         />
       </Section>
 
@@ -129,6 +155,12 @@ export default async function AccountPage() {
             </Link>
           </div>
         </div>
+      </Section>
+
+      <div className="border-t border-border" />
+
+      <Section title="Security" description="Change your password.">
+        <PasswordSection />
       </Section>
     </div>
   );

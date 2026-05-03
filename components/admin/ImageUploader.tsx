@@ -9,9 +9,10 @@ import { GifPicker } from "./GifPicker";
 interface Props {
   kind: "avatar" | "banner";
   currentImageId: string | null;
+  allowGif?: boolean;
 }
 
-export function ImageUploader({ kind, currentImageId }: Props) {
+export function ImageUploader({ kind, currentImageId, allowGif = true }: Props) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(
     currentImageId ? `/api/images/${currentImageId}?v=${currentImageId}` : null,
   );
@@ -27,6 +28,14 @@ export function ImageUploader({ kind, currentImageId }: Props) {
 
   async function onFile(file: File) {
     setError(null);
+    if (!allowGif && file.type === "image/gif") {
+      setError(
+        kind === "banner"
+          ? "Banner GIFs are a Pro feature. Upgrade to use animated banners."
+          : "Avatar GIFs are a Pro feature. Upgrade to use animated avatars.",
+      );
+      return;
+    }
     setUploading(true);
     try {
       const fd = new FormData();
@@ -82,7 +91,11 @@ export function ImageUploader({ kind, currentImageId }: Props) {
       <input
         ref={inputRef}
         type="file"
-        accept="image/png,image/jpeg,image/webp,image/gif"
+        accept={
+          allowGif
+            ? "image/png,image/jpeg,image/webp,image/gif"
+            : "image/png,image/jpeg,image/webp"
+        }
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];
@@ -95,16 +108,18 @@ export function ImageUploader({ kind, currentImageId }: Props) {
           <Upload size={13} />
           {previewUrl ? "Replace" : "Upload"}
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => setGifOpen(true)}
-          className="gap-1.5"
-        >
-          <Sparkles size={13} />
-          Pick GIF
-        </Button>
+        {allowGif && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setGifOpen(true)}
+            className="gap-1.5"
+          >
+            <Sparkles size={13} />
+            Pick GIF
+          </Button>
+        )}
         {previewUrl && (
           <Button
             type="button"
@@ -126,9 +141,13 @@ export function ImageUploader({ kind, currentImageId }: Props) {
       </div>
       {error && <p className="text-[12px] text-danger">{error}</p>}
       <p className="text-[11.5px] text-ink-muted">
-        {isAvatar
-          ? "PNG, JPEG, WebP, or GIF. Static images resize to 256×256; GIFs upload as-is (≤ 6 MB)."
-          : "PNG, JPEG, WebP, or GIF. Static images resize to 1600×240; GIFs upload as-is (≤ 6 MB)."}
+        {allowGif
+          ? isAvatar
+            ? "PNG, JPEG, WebP, or GIF. Static images resize to 256×256; GIFs upload as-is (≤ 6 MB)."
+            : "PNG, JPEG, WebP, or GIF. Static images resize to 1600×240; GIFs upload as-is (≤ 6 MB)."
+          : isAvatar
+            ? "PNG, JPEG, or WebP — resized to 256×256. Animated GIFs available on Pro."
+            : "PNG, JPEG, or WebP — resized to 1600×240. Animated banner GIFs available on Pro."}
       </p>
       <GifPicker
         open={gifOpen}

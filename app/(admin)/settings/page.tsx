@@ -7,6 +7,8 @@ import { env, paymentsConfigured } from "@/lib/env";
 import { GoogleSection } from "@/components/admin/SettingsSections";
 import { AppearanceSection } from "@/components/admin/AppearanceSection";
 import { PaymentProvidersSection } from "@/components/admin/PaymentProvidersSection";
+import { BillingSection } from "@/components/admin/BillingSection";
+import { isPlanActive } from "@/lib/tiers";
 
 function SettingsCard({
   title,
@@ -30,8 +32,15 @@ function SettingsCard({
   );
 }
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ billing?: string }>;
+}) {
   const { user } = await requireUser();
+  const sp = await searchParams;
+  const billingBanner =
+    sp.billing === "success" ? "success" : sp.billing === "cancelled" ? "cancelled" : null;
   const integ = await (await integrations()).findOne({
     userId: user._id,
     provider: "google_calendar",
@@ -66,6 +75,26 @@ export default async function SettingsPage() {
           .
         </p>
       </header>
+
+      <SettingsCard
+        title="Plan"
+        description="Free / Pro €5 a month. Cancel anytime from the Stripe billing portal."
+      >
+        <BillingSection
+          plan={isPlanActive(user)}
+          status={user.subscription?.status ?? null}
+          currentPeriodEnd={
+            user.subscription?.currentPeriodEnd
+              ? new Date(user.subscription.currentPeriodEnd).toISOString()
+              : null
+          }
+          cancelAtPeriodEnd={Boolean(user.subscription?.cancelAtPeriodEnd)}
+          hasCustomer={Boolean(user.subscription?.stripeCustomerId)}
+          banner={billingBanner}
+        />
+      </SettingsCard>
+
+      <div className="border-t border-border" />
 
       <SettingsCard
         title="Appearance"

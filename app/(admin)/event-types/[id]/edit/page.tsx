@@ -7,10 +7,12 @@ import { notFound } from "next/navigation";
 import { EventTypeForm } from "@/components/admin/EventTypeForm";
 import { eventTypes } from "@/lib/collections";
 import { requireUser } from "@/lib/auth-helpers";
+import { isPlanActive } from "@/lib/tiers";
 
 export default async function EditEventType({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { user } = await requireUser();
+  const plan = isPlanActive(user);
   const evt = await (await eventTypes()).findOne({ _id: new ObjectId(id), userId: user._id });
   if (!evt) notFound();
 
@@ -49,6 +51,7 @@ export default async function EditEventType({ params }: { params: Promise<{ id: 
         existingId={id}
         initial={initial}
         connectedProviders={connectedProviders}
+        plan={plan}
       />
     </div>
   );

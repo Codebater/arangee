@@ -17,6 +17,8 @@ interface Props {
   themeTokensDark: Record<string, string>;
   profileCard: ProfileCardId | null;
   font: FontChoice | null;
+  allowAvatarGif?: boolean;
+  allowBannerGif?: boolean;
 }
 
 export function BrandingSection({
@@ -27,6 +29,8 @@ export function BrandingSection({
   themeTokensDark,
   profileCard,
   font,
+  allowAvatarGif = true,
+  allowBannerGif = true,
 }: Props) {
   const [themeOpen, setThemeOpen] = useState(false);
   return (
@@ -35,14 +39,22 @@ export function BrandingSection({
         <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-muted">
           Banner
         </p>
-        <ImageUploader kind="banner" currentImageId={bannerImageId} />
+        <ImageUploader
+          kind="banner"
+          currentImageId={bannerImageId}
+          allowGif={allowBannerGif}
+        />
       </div>
 
       <div className="space-y-2">
         <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-muted">
           Avatar
         </p>
-        <ImageUploader kind="avatar" currentImageId={avatarImageId} />
+        <ImageUploader
+          kind="avatar"
+          currentImageId={avatarImageId}
+          allowGif={allowAvatarGif}
+        />
       </div>
 
       <div className="space-y-2">

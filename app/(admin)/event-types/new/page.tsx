@@ -2,11 +2,13 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { EventTypeForm } from "@/components/admin/EventTypeForm";
 import { requireUser } from "@/lib/auth-helpers";
+import { isPlanActive } from "@/lib/tiers";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewEventType() {
   const { user } = await requireUser();
+  const plan = isPlanActive(user);
   const connectedProviders = {
     stripe: Boolean(user.payments?.stripe?.chargesEnabled),
     nowpayments: Boolean(user.payments?.nowpayments),
@@ -25,7 +27,7 @@ export default async function NewEventType() {
         </p>
         <h1 className="text-[28px] leading-tight tracking-[-0.02em]">Create event type</h1>
       </header>
-      <EventTypeForm connectedProviders={connectedProviders} />
+      <EventTypeForm connectedProviders={connectedProviders} plan={plan} />
     </div>
   );
 }

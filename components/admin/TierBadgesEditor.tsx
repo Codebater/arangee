@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TierBadge, TIER_BADGE_DEFS } from "@/components/public/TierBadge";
 import type { TierBadgeType } from "@/lib/types";
@@ -9,15 +9,34 @@ import { saveTierBadges } from "@/server-actions/branding";
 
 const ALL: TierBadgeType[] = ["free", "pro", "king", "supporter", "developer"];
 
-export function TierBadgesEditor({ initial }: { initial: TierBadgeType[] }) {
-  const [picked, setPicked] = useState<Set<TierBadgeType>>(new Set(initial));
+const REQUIREMENT: Record<TierBadgeType, string> = {
+  free: "Free",
+  pro: "Upgrade to Pro",
+  king: "Donate €25+",
+  supporter: "Donate €5+",
+  developer: "Pro plan",
+};
+
+export function TierBadgesEditor({
+  initial,
+  entitled,
+}: {
+  initial: TierBadgeType[];
+  entitled: TierBadgeType[];
+}) {
+  const entitledSet = new Set(entitled);
+  const [picked, setPicked] = useState<Set<TierBadgeType>>(
+    new Set(initial.filter((t) => entitledSet.has(t))),
+  );
   const [pending, start] = useTransition();
   const [savedAt, setSavedAt] = useState<number | null>(null);
 
   const dirty =
-    picked.size !== initial.length || initial.some((t) => !picked.has(t));
+    picked.size !== initial.filter((t) => entitledSet.has(t)).length ||
+    initial.filter((t) => entitledSet.has(t)).some((t) => !picked.has(t));
 
   function toggle(t: TierBadgeType) {
+    if (!entitledSet.has(t)) return;
     setPicked((cur) => {
       const next = new Set(cur);
       if (next.has(t)) next.delete(t);
@@ -40,20 +59,29 @@ export function TierBadgesEditor({ initial }: { initial: TierBadgeType[] }) {
         {ALL.map((t) => {
           const def = TIER_BADGE_DEFS[t];
           const active = picked.has(t);
+          const locked = !entitledSet.has(t);
           return (
             <button
               key={t}
               type="button"
               onClick={() => toggle(t)}
               aria-pressed={active}
-              className={`flex items-center gap-2 rounded-md border px-3 py-2 transition-colors duration-150 ${
+              aria-disabled={locked}
+              disabled={locked}
+              title={locked ? REQUIREMENT[t] : def.label}
+              className={`relative flex items-center gap-2 rounded-md border px-3 py-2 transition-colors duration-150 ${
                 active
                   ? "border-primary bg-primary-tint"
-                  : "border-border bg-surface hover:border-border-strong"
+                  : locked
+                    ? "border-border bg-bg-elevated opacity-60 cursor-not-allowed"
+                    : "border-border bg-surface hover:border-border-strong"
               }`}
             >
               <TierBadge type={t} size={22} />
               <span className="text-[12.5px] text-ink">{def.label}</span>
+              {locked && (
+                <Lock size={10} className="text-ink-muted" />
+              )}
             </button>
           );
         })}
@@ -76,7 +104,8 @@ export function TierBadgesEditor({ initial }: { initial: TierBadgeType[] }) {
         </Button>
       </div>
       <p className="text-[11.5px] text-ink-muted">
-        These render next to your name on /{`{username}`}. Hover for the label.
+        Locked badges become available when you upgrade or donate. They render next to
+        your name on the public profile.
       </p>
     </div>
   );

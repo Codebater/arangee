@@ -14,6 +14,7 @@ import {
 import { removeImageForUser } from "@/lib/images";
 import { ALLOWED_TOKEN_KEYS, COLOR_VALUE_RE } from "@/lib/theme-tokens";
 import { isValidLinkUrl, normalizeLinkUrl } from "@/lib/link-platforms";
+import { getEntitledTierBadges } from "@/lib/tiers";
 
 function sanitizeTokens(map: Record<string, string> | undefined): Record<string, string> | undefined {
   if (!map) return undefined;
@@ -97,10 +98,12 @@ export async function saveProfileLinks(payload: unknown) {
 export async function saveTierBadges(payload: unknown) {
   const { user } = await requireUser();
   const parsed = tierBadgesSchema.parse(payload);
+  const entitled = new Set(getEntitledTierBadges(user));
+  const filtered = parsed.filter((b) => entitled.has(b));
   await (await users()).updateOne(
     { _id: user._id },
-    parsed.length
-      ? { $set: { tierBadges: parsed, updatedAt: new Date() } }
+    filtered.length
+      ? { $set: { tierBadges: filtered, updatedAt: new Date() } }
       : { $unset: { tierBadges: "" }, $set: { updatedAt: new Date() } },
   );
   revalidatePath("/account");

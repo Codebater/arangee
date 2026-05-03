@@ -31,11 +31,19 @@ export interface ProcessedImage {
 export async function processUpload(
   file: File,
   kind: ImageKind,
+  opts: { allowGif: boolean } = { allowGif: true },
 ): Promise<ProcessedImage> {
   if (!ALLOWED_MIMES.has(file.type)) {
     throw new Error("Only PNG, JPEG, WebP, or GIF files are accepted.");
   }
   const isGif = file.type === "image/gif";
+  if (isGif && !opts.allowGif) {
+    throw new Error(
+      kind === "banner"
+        ? "Banner GIFs are a Pro feature."
+        : "Avatar GIFs are a Pro feature.",
+    );
+  }
   const limit = isGif ? MAX_GIF_BYTES : MAX_INPUT_BYTES;
   if (file.size > limit) {
     throw new Error(

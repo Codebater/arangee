@@ -15,6 +15,7 @@ const schema = z.object({
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
   STRIPE_PUBLISHABLE_KEY: z.string().optional(),
+  STRIPE_PRO_PRICE_ID: z.string().optional(),
   PLATFORM_FEE_BPS: z.coerce.number().int().min(0).max(10_000).default(0),
   GIPHY_API_KEY: z.string().optional(),
 });

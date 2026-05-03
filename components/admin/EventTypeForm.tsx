@@ -35,6 +35,8 @@ interface ConnectedProviders {
   nowpayments: boolean;
 }
 
+type Plan = "free" | "pro";
+
 const colors: EventColor[] = ["iris", "rose", "amber", "sage", "slate"];
 
 function Section({
@@ -63,10 +65,12 @@ export function EventTypeForm({
   existingId,
   initial,
   connectedProviders,
+  plan = "free",
 }: {
   existingId?: string;
   initial?: FormState;
   connectedProviders: ConnectedProviders;
+  plan?: Plan;
 }) {
   const [state, setState] = useState<FormState>(
     initial ?? {
@@ -87,6 +91,7 @@ export function EventTypeForm({
     },
   );
   const [pending, start] = useTransition();
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   function patch<K extends keyof FormState>(key: K, value: FormState[K]) {
     setState((s) => ({ ...s, [key]: value }));
@@ -114,11 +119,18 @@ export function EventTypeForm({
   }
 
   function submit() {
+    setSubmitError(null);
     const fd = new FormData();
     fd.append("payload", JSON.stringify(state));
     start(async () => {
-      if (existingId) await updateEventType(existingId, fd);
-      else await createEventType(fd);
+      try {
+        if (existingId) await updateEventType(existingId, fd);
+        else await createEventType(fd);
+      } catch (err) {
+        // redirect() in the server action throws NEXT_REDIRECT — that is normal control flow.
+        if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) throw err;
+        setSubmitError(err instanceof Error ? err.message : "Could not save.");
+      }
     });
   }
 
@@ -424,6 +436,7 @@ export function EventTypeForm({
           state={state}
           patch={(v) => setState((s) => ({ ...s, payment: v }))}
           connectedProviders={connectedProviders}
+          plan={plan}
         />
       </Section>
 
@@ -437,6 +450,12 @@ export function EventTypeForm({
           </span>
         </label>
       </Section>
+
+      {submitError && (
+        <p className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-[12.5px] text-danger">
+          {submitError}
+        </p>
+      )}
 
       <div className="sticky bottom-4 z-10 flex justify-end border-t border-border bg-bg/85 -mx-2 px-2 pt-4 backdrop-blur">
         <Button type="submit" disabled={pending} className="gap-2">
@@ -458,14 +477,37 @@ function PaymentSubSection({
   state,
   patch,
   connectedProviders,
+  plan,
 }: {
   state: FormState;
   patch: (next: EventPaymentConfig | undefined) => void;
   connectedProviders: ConnectedProviders;
+  plan: Plan;
 }) {
   const cfg = state.payment;
   const enabled = Boolean(cfg?.enabled);
   const anyConnected = connectedProviders.stripe || connectedProviders.nowpayments;
+
+  if (plan === "free") {
+    return (
+      <div className="rounded-lg border border-border bg-bg-elevated p-4 space-y-2">
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-muted">
+            Pro feature
+          </span>
+        </div>
+        <p className="text-[12.5px] text-ink-soft">
+          Charge for bookings via Stripe or NowPayments after upgrading to Pro.
+        </p>
+        <a
+          href="/settings#billing"
+          className="inline-flex h-8 items-center rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:bg-primary-hover"
+        >
+          Upgrade to Pro
+        </a>
+      </div>
+    );
+  }
 
   function defaultProvider(): PaymentProviderId {
     if (connectedProviders.stripe) return "stripe";

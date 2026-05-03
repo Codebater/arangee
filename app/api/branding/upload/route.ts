@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth-helpers";
 import { processUpload, saveImageForUser, type ImageKind } from "@/lib/images";
+import { canUploadGif } from "@/lib/tiers";
 
 export const runtime = "nodejs";
 
@@ -23,7 +24,7 @@ export async function POST(req: Request) {
   const kind = kindRaw as ImageKind;
 
   try {
-    const processed = await processUpload(file, kind);
+    const processed = await processUpload(file, kind, { allowGif: canUploadGif(user, kind) });
     const imageId = await saveImageForUser(user, kind, processed);
     return NextResponse.json({
       ok: true,

@@ -181,6 +181,16 @@ export const tierBadgeSchema = z.enum([
 
 export const tierBadgesSchema = z.array(tierBadgeSchema).max(5);
 
+export const changePasswordSchema = z.object({
+  current: z.string().min(1).max(200),
+  next: z.string().min(8).max(200),
+});
+
+export const donationAmountSchema = z.object({
+  amountCents: z.number().int().min(100).max(100_000_00),
+  currency: z.string().length(3).default("EUR"),
+});
+
 export const nowpaymentsKeysSchema = z.object({
   apiKey: z.string().min(8).max(200),
   ipnSecret: z.string().min(8).max(200),
