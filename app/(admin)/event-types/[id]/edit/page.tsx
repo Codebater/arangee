@@ -6,10 +6,12 @@ import { ObjectId } from "mongodb";
 import { notFound } from "next/navigation";
 import { EventTypeForm } from "@/components/admin/EventTypeForm";
 import { eventTypes } from "@/lib/collections";
+import { requireUser } from "@/lib/auth-helpers";
 
 export default async function EditEventType({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const evt = await (await eventTypes()).findOne({ _id: new ObjectId(id) });
+  const { user } = await requireUser();
+  const evt = await (await eventTypes()).findOne({ _id: new ObjectId(id), userId: user._id });
   if (!evt) notFound();
 
   const initial = {
@@ -20,7 +22,13 @@ export default async function EditEventType({ params }: { params: Promise<{ id: 
     location: evt.location,
     rules: evt.rules,
     customQuestions: evt.customQuestions,
+    payment: evt.payment,
     active: evt.active,
+  };
+
+  const connectedProviders = {
+    stripe: Boolean(user.payments?.stripe?.chargesEnabled),
+    nowpayments: Boolean(user.payments?.nowpayments),
   };
 
   return (
@@ -37,7 +45,11 @@ export default async function EditEventType({ params }: { params: Promise<{ id: 
         </p>
         <h1 className="text-[28px] leading-tight tracking-[-0.02em]">{evt.title}</h1>
       </header>
-      <EventTypeForm existingId={id} initial={initial} />
+      <EventTypeForm
+        existingId={id}
+        initial={initial}
+        connectedProviders={connectedProviders}
+      />
     </div>
   );
 }

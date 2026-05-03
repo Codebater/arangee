@@ -8,19 +8,34 @@ import { findUserByUsername } from "@/lib/scope";
 import { isReservedUsername } from "@/lib/users";
 import { isValidTokenShape } from "@/lib/tokens";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { BookingStatusPoller } from "@/components/public/BookingStatusPoller";
 
 export default async function BookedPage({
   params,
   searchParams,
 }: {
   params: Promise<{ username: string; slug: string }>;
-  searchParams: Promise<{ token?: string }>;
+  searchParams: Promise<{ token?: string; pending?: string }>;
 }) {
   const { username, slug } = await params;
   const sp = await searchParams;
+  if (isReservedUsername(username)) notFound();
+
+  if (sp.pending && !sp.token) {
+    return (
+      <main className="relative mx-auto flex min-h-screen max-w-md flex-col px-6 pt-6 md:pt-10 animate-fade-in">
+        <div className="mb-12 flex items-center justify-end">
+          <ThemeToggle />
+        </div>
+        <div className="rounded-xl border border-border bg-surface p-7 shadow-[0_1px_2px_rgba(15,15,20,0.04)]">
+          <BookingStatusPoller pendingId={sp.pending} username={username} slug={slug} />
+        </div>
+      </main>
+    );
+  }
+
   const token = sp.token;
   if (!token || !isValidTokenShape(token)) notFound();
-  if (isReservedUsername(username)) notFound();
 
   const host = await findUserByUsername(username);
   if (!host) notFound();

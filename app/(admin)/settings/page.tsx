@@ -3,8 +3,10 @@ export const dynamic = "force-dynamic";
 import { integrations } from "@/lib/collections";
 import { requireUser } from "@/lib/auth-helpers";
 import { listCalendars } from "@/lib/calendar";
+import { env, paymentsConfigured } from "@/lib/env";
 import { GoogleSection } from "@/components/admin/SettingsSections";
 import { AppearanceSection } from "@/components/admin/AppearanceSection";
+import { PaymentProvidersSection } from "@/components/admin/PaymentProvidersSection";
 
 function SettingsCard({
   title,
@@ -83,6 +85,28 @@ export default async function SettingsPage() {
           calendars={cals}
           selectedId={integ?.calendarId ?? null}
           error={calError}
+        />
+      </SettingsCard>
+
+      <div className="border-t border-border" />
+
+      <SettingsCard
+        title="Payments"
+        description="Connect Stripe (cards) or NowPayments (crypto) to charge for paid event types."
+      >
+        <PaymentProvidersSection
+          appUrl={env().APP_URL}
+          stripeConfigured={paymentsConfigured().stripe}
+          stripe={
+            user.payments?.stripe
+              ? {
+                  accountId: user.payments.stripe.accountId,
+                  chargesEnabled: user.payments.stripe.chargesEnabled,
+                  detailsSubmitted: user.payments.stripe.detailsSubmitted,
+                }
+              : null
+          }
+          nowpayments={{ connected: Boolean(user.payments?.nowpayments) }}
         />
       </SettingsCard>
     </div>

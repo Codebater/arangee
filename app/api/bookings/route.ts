@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { bookingRequestSchema } from "@/lib/validation";
-import { createBooking, BookingError } from "@/lib/booking";
+import { createBookingIntent, BookingError } from "@/lib/booking";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const booking = await createBooking({
+    const result = await createBookingIntent({
       username: parsed.data.username,
       slug: parsed.data.slug,
       startUtc: new Date(parsed.data.startUtc),
@@ -24,11 +24,26 @@ export async function POST(req: NextRequest) {
       guestTimezone: parsed.data.guestTimezone,
       customAnswers: parsed.data.customAnswers,
     });
-    return NextResponse.json({ token: booking.manageToken });
+    if (result.kind === "confirmed") {
+      return NextResponse.json({ token: result.booking.manageToken });
+    }
+    return NextResponse.json({
+      checkoutUrl: result.checkoutUrl,
+      pendingBookingId: result.pendingBookingId.toString(),
+    });
   } catch (err) {
     if (err instanceof BookingError) {
       console.error("[bookings] BookingError", err.code, err.message);
-      const status = err.code === "slot_taken" ? 409 : err.code === "not_found" ? 404 : err.code === "calendar" ? 503 : 400;
+      const status =
+        err.code === "slot_taken"
+          ? 409
+          : err.code === "not_found"
+            ? 404
+            : err.code === "calendar"
+              ? 503
+              : err.code === "payment_not_configured"
+                ? 503
+                : 400;
       return NextResponse.json({ error: err.code, message: err.message }, { status });
     }
     console.error("[bookings] unexpected error:", err);

@@ -7,7 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import type { EventTypeDoc, EventColor, CustomQuestion, LocationSpec } from "@/lib/types";
+import type {
+  EventTypeDoc,
+  EventColor,
+  CustomQuestion,
+  LocationSpec,
+  EventPaymentConfig,
+  PaymentProviderId,
+  RefundPolicy,
+} from "@/lib/types";
 import { createEventType, updateEventType } from "@/server-actions/event-types";
 
 type FormState = {
@@ -18,8 +26,14 @@ type FormState = {
   location: LocationSpec;
   rules: EventTypeDoc["rules"];
   customQuestions: CustomQuestion[];
+  payment?: EventPaymentConfig;
   active: boolean;
 };
+
+interface ConnectedProviders {
+  stripe: boolean;
+  nowpayments: boolean;
+}
 
 const colors: EventColor[] = ["iris", "rose", "amber", "sage", "slate"];
 
@@ -48,9 +62,11 @@ function Section({
 export function EventTypeForm({
   existingId,
   initial,
+  connectedProviders,
 }: {
   existingId?: string;
   initial?: FormState;
+  connectedProviders: ConnectedProviders;
 }) {
   const [state, setState] = useState<FormState>(
     initial ?? {
@@ -400,6 +416,19 @@ export function EventTypeForm({
 
       <div className="border-t border-border" />
 
+      <Section
+        title="Payment"
+        description="Optional. Charge guests before confirming the booking."
+      >
+        <PaymentSubSection
+          state={state}
+          patch={(v) => setState((s) => ({ ...s, payment: v }))}
+          connectedProviders={connectedProviders}
+        />
+      </Section>
+
+      <div className="border-t border-border" />
+
       <Section title="Status" description="Hidden event types are accessible only by direct link.">
         <label className="inline-flex items-center gap-3 text-[13px]">
           <Switch checked={state.active} onCheckedChange={(v) => patch("active", v)} />
@@ -422,5 +451,193 @@ export function EventTypeForm({
         </Button>
       </div>
     </form>
+  );
+}
+
+function PaymentSubSection({
+  state,
+  patch,
+  connectedProviders,
+}: {
+  state: FormState;
+  patch: (next: EventPaymentConfig | undefined) => void;
+  connectedProviders: ConnectedProviders;
+}) {
+  const cfg = state.payment;
+  const enabled = Boolean(cfg?.enabled);
+  const anyConnected = connectedProviders.stripe || connectedProviders.nowpayments;
+
+  function defaultProvider(): PaymentProviderId {
+    if (connectedProviders.stripe) return "stripe";
+    if (connectedProviders.nowpayments) return "nowpayments";
+    return "stripe";
+  }
+
+  function setEnabled(on: boolean) {
+    if (!on) return patch(undefined);
+    patch(
+      cfg ?? {
+        enabled: true,
+        provider: defaultProvider(),
+        amount: 1000,
+        currency: "USD",
+        refund: { policy: "full", cutoffHours: 24 },
+      },
+    );
+  }
+
+  function setField<K extends keyof EventPaymentConfig>(k: K, v: EventPaymentConfig[K]) {
+    if (!cfg) return;
+    patch({ ...cfg, [k]: v });
+  }
+
+  function setRefund<K extends keyof EventPaymentConfig["refund"]>(
+    k: K,
+    v: EventPaymentConfig["refund"][K],
+  ) {
+    if (!cfg) return;
+    patch({ ...cfg, refund: { ...cfg.refund, [k]: v } });
+  }
+
+  if (!anyConnected && !enabled) {
+    return (
+      <p className="text-[12.5px] text-ink-muted">
+        Connect Stripe or NowPayments in{" "}
+        <a href="/settings#payments" className="text-ink underline-offset-4 hover:underline">
+          Settings → Payments
+        </a>{" "}
+        to charge for this event type.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-5">
+      <label className="inline-flex items-center gap-3 text-[13px]">
+        <Switch checked={enabled} onCheckedChange={setEnabled} disabled={!anyConnected} />
+        <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-muted">
+          {enabled ? "Paid event" : "Free event"}
+        </span>
+      </label>
+
+      {enabled && cfg && (
+        <>
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="space-y-1.5">
+              <Label>Provider</Label>
+              <select
+                value={cfg.provider}
+                onChange={(e) => setField("provider", e.target.value as PaymentProviderId)}
+                className="h-9 w-full rounded-md border border-border bg-surface px-2 text-[13px]"
+              >
+                {connectedProviders.stripe && <option value="stripe">Stripe (cards)</option>}
+                {connectedProviders.nowpayments && (
+                  <option value="nowpayments">NowPayments (crypto)</option>
+                )}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="payAmount">Price</Label>
+              <Input
+                id="payAmount"
+                type="number"
+                min={1}
+                step={1}
+                value={(cfg.amount / 100).toString()}
+                onChange={(e) =>
+                  setField("amount", Math.max(1, Math.round(Number(e.target.value) * 100)))
+                }
+                className="font-mono tabular"
+              />
+              <p className="text-[11px] text-ink-muted">in {cfg.currency}</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="payCurrency">Currency</Label>
+              <Input
+                id="payCurrency"
+                value={cfg.currency}
+                onChange={(e) => setField("currency", e.target.value.toUpperCase().slice(0, 6))}
+                placeholder="USD"
+                className="font-mono uppercase"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="payDescription">Checkout description (optional)</Label>
+            <Input
+              id="payDescription"
+              value={cfg.description ?? ""}
+              onChange={(e) => setField("description", e.target.value)}
+              placeholder="Defaults to the event title"
+            />
+          </div>
+
+          <div className="space-y-3 rounded-lg border border-border bg-bg-elevated p-4">
+            <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-muted">
+              Refund policy on cancel
+            </p>
+            <div className="grid gap-2 md:grid-cols-3">
+              {(["full", "partial", "none"] as RefundPolicy[]).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setRefund("policy", p)}
+                  aria-pressed={cfg.refund.policy === p}
+                  className={`rounded-md border px-3 py-2 text-[12.5px] capitalize transition-colors duration-150 ${
+                    cfg.refund.policy === p
+                      ? "border-primary bg-primary-tint text-ink"
+                      : "border-border bg-surface text-ink-soft hover:border-border-strong"
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+            {cfg.refund.policy === "partial" && (
+              <div className="space-y-1.5">
+                <Label htmlFor="partialPercent">Refund percent</Label>
+                <Input
+                  id="partialPercent"
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={cfg.refund.partialPercent ?? 50}
+                  onChange={(e) =>
+                    setRefund(
+                      "partialPercent",
+                      Math.max(0, Math.min(100, Number(e.target.value))),
+                    )
+                  }
+                  className="w-32 font-mono tabular"
+                />
+              </div>
+            )}
+            {cfg.refund.policy !== "none" && (
+              <div className="space-y-1.5">
+                <Label htmlFor="cutoffHours">Cutoff (hours before start)</Label>
+                <Input
+                  id="cutoffHours"
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={cfg.refund.cutoffHours ?? ""}
+                  onChange={(e) => {
+                    const v = e.target.value === "" ? undefined : Math.max(0, Number(e.target.value));
+                    setRefund("cutoffHours", v as never);
+                  }}
+                  placeholder="No cutoff"
+                  className="w-32 font-mono tabular"
+                />
+                <p className="text-[11px] text-ink-muted">
+                  Cancellations made within this window get no refund.
+                </p>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
   );
 }

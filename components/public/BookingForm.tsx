@@ -45,15 +45,23 @@ export function BookingForm({ username, slug, startUtc, guestTimezone, customQue
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(
-          data.error === "slot_taken"
-            ? "That slot was just taken. Please pick another."
-            : "Could not complete booking.",
-        );
+        if (data.error === "slot_taken") {
+          setError("That slot was just taken. Please pick another.");
+        } else if (data.error === "payment_not_configured") {
+          setError("This event type requires payment but the host hasn't connected a payment provider yet.");
+        } else {
+          setError("Could not complete booking.");
+        }
         return;
       }
-      const { token } = await res.json();
-      router.push(`/${username}/${slug}/booked?token=${token}`);
+      const result = (await res.json()) as
+        | { token: string }
+        | { checkoutUrl: string; pendingBookingId: string };
+      if ("checkoutUrl" in result) {
+        window.location.href = result.checkoutUrl;
+        return;
+      }
+      router.push(`/${username}/${slug}/booked?token=${result.token}`);
     });
   }
 
