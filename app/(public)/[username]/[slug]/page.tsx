@@ -41,7 +41,7 @@ export default async function BookingPage({
       const now = new Date();
       const horizon = new Date(now.getTime() + evt.rules.maxAdvanceDays * 24 * 3600_000);
       const busy = await getBusyTimes(
-        integ.composioUserId,
+        integ.composioUserId!,
         integ.calendarId,
         now,
         horizon,

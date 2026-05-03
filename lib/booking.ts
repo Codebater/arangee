@@ -12,6 +12,7 @@ import { computeSlots } from "./availability";
 import { ymdInTz } from "./timezone";
 import { newManageToken } from "./tokens";
 import { createCalendarEvent, deleteCalendarEvent, getBusyTimes } from "./calendar";
+import { mirrorEvent, unmirrorEvent } from "./apple-sync";
 import { env } from "./env";
 import { decryptString } from "./crypto";
 import { getProvider, ManualRefundRequiredError } from "./payments";
@@ -91,7 +92,7 @@ async function assertSlotAvailable(
   const windowEnd = new Date(endUtc.getTime() + 24 * 60 * 60 * 1000);
 
   const busy = await getBusyTimes(
-    integration.composioUserId,
+    integration.composioUserId!,
     integration.calendarId,
     windowStart,
     windowEnd,
@@ -120,7 +121,7 @@ async function assertSlotAvailable(
   if (!free) throw new BookingError("slot_taken", "Slot is no longer available");
 
   return {
-    composioUserId: integration.composioUserId,
+    composioUserId: integration.composioUserId!,
     calendarId: integration.calendarId,
     endUtc,
   };
@@ -184,7 +185,81 @@ async function commitBooking(args: CommitArgs): Promise<BookingDoc> {
     throw err;
   }
 
+  await mirrorBookingToApple(host, eventType, doc, created.meetLink);
+
   return doc;
+}
+
+async function mirrorBookingToApple(
+  host: UserDoc,
+  eventType: EventTypeDoc,
+  booking: BookingDoc,
+  meetLink: string | null,
+): Promise<void> {
+  try {
+    const apple = await (await integrations()).findOne({
+      userId: host._id,
+      provider: "apple_calendar_mirror",
+      status: "ACTIVE",
+    });
+    if (!apple?.appleEmail || !apple.appleAppPasswordEnc || !apple.calendarId) return;
+
+    const summary = `${eventType.title} with ${booking.guestName}`;
+    const description = buildEventDescription(
+      eventType,
+      booking.guestName,
+      booking.customAnswers,
+      booking.manageToken,
+    );
+    const location =
+      eventType.location.type === "google_meet"
+        ? meetLink || "Google Meet"
+        : eventType.location.type === "phone"
+          ? `Phone: ${eventType.location.phoneNumber}`
+          : eventType.location.customText;
+
+    const result = await mirrorEvent({
+      email: apple.appleEmail,
+      appPassword: decryptString(apple.appleAppPasswordEnc),
+      calendarUrl: apple.calendarId,
+      uid: booking._id.toString(),
+      summary,
+      description,
+      startUtc: booking.startUtc,
+      endUtc: booking.endUtc,
+      location: location || undefined,
+      attendeeEmail: booking.guestEmail,
+      attendeeName: booking.guestName,
+      organizerEmail: host.email,
+      organizerName: host.name,
+    });
+    await (await bookings()).updateOne(
+      { _id: booking._id },
+      { $set: { appleObjectUrl: result.url, appleObjectEtag: result.etag } },
+    );
+  } catch (err) {
+    console.error("[apple-mirror] write failed; booking still saved", err);
+  }
+}
+
+async function unmirrorBookingFromApple(booking: BookingDoc): Promise<void> {
+  if (!booking.appleObjectUrl) return;
+  try {
+    const apple = await (await integrations()).findOne({
+      userId: booking.userId,
+      provider: "apple_calendar_mirror",
+      status: "ACTIVE",
+    });
+    if (!apple?.appleEmail || !apple.appleAppPasswordEnc) return;
+    await unmirrorEvent({
+      email: apple.appleEmail,
+      appPassword: decryptString(apple.appleAppPasswordEnc),
+      objectUrl: booking.appleObjectUrl,
+      etag: booking.appleObjectEtag ?? "",
+    });
+  } catch (err) {
+    console.error("[apple-mirror] delete failed; calendar may need manual cleanup", err);
+  }
 }
 
 export async function createBooking(input: CreateBookingInput): Promise<BookingDoc> {
@@ -442,11 +517,13 @@ export async function cancelBooking(token: string): Promise<BookingDoc> {
   });
   if (integration) {
     await deleteCalendarEvent(
-      integration.composioUserId,
+      integration.composioUserId!,
       integration.calendarId,
       booking.googleEventId,
     ).catch(() => {});
   }
+
+  await unmirrorBookingFromApple(booking);
 
   if (booking.payment) {
     const host = await (await users()).findOne({ _id: booking.userId });
@@ -538,11 +615,13 @@ export async function rescheduleBooking(token: string, newStartUtc: Date): Promi
   });
   if (integration) {
     await deleteCalendarEvent(
-      integration.composioUserId,
+      integration.composioUserId!,
       integration.calendarId,
       original.googleEventId,
     ).catch(() => {});
   }
+
+  await unmirrorBookingFromApple(original);
 
   return newBooking;
 }

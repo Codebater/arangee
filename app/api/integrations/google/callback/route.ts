@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL("/settings?error=no_connection", req.url));
   }
 
-  const { status } = await getConnection(integ.composioConnectionId);
+  const { status } = await getConnection(integ.composioConnectionId!);
   if (status !== "ACTIVE") {
     await (await integrations()).updateOne(
       { _id: integ._id },

@@ -137,17 +137,24 @@ export interface VerificationTokenDoc {
 
 export type ConnectionStatus = "ACTIVE" | "EXPIRED" | "FAILED" | "INACTIVE" | "INITIATED";
 
+export type IntegrationProvider = "google_calendar" | "apple_calendar_mirror";
+
 export interface IntegrationDoc {
   _id: ObjectId;
   userId: ObjectId;
-  provider: "google_calendar";
-  composioConnectionId: string;
-  composioUserId: string;
+  provider: IntegrationProvider;
   status: ConnectionStatus;
   calendarId: string;
   calendarSummary: string;
   connectedAt: Date;
   lastCheckedAt: Date;
+  // google_calendar:
+  composioConnectionId?: string;
+  composioUserId?: string;
+  // apple_calendar_mirror:
+  appleEmail?: string;
+  appleAppPasswordEnc?: string;
+  calendarHomeUrl?: string;
 }
 
 export type PaymentProviderId = "stripe" | "nowpayments";
@@ -237,6 +244,8 @@ export interface BookingDoc {
   manageToken: string;
   status: BookingStatus;
   payment?: BookingPaymentRecord;
+  appleObjectUrl?: string;
+  appleObjectEtag?: string;
   rescheduledToBookingId: ObjectId | null;
   createdAt: Date;
   cancelledAt: Date | null;

@@ -196,6 +196,11 @@ export const nowpaymentsKeysSchema = z.object({
   ipnSecret: z.string().min(8).max(200),
 });
 
+export const appleConnectSchema = z.object({
+  email: z.email().max(254),
+  appPassword: z.string().min(16).max(40),
+});
+
 export const bookingRequestSchema = z.object({
   username: usernameSchema,
   slug: z.string().regex(slugRe),

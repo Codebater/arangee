@@ -35,7 +35,7 @@ export async function GET(
 
   let busy: Array<{ start: Date; end: Date }>;
   try {
-    busy = await getBusyTimes(integ.composioUserId, integ.calendarId, now, horizon, avail.timezone);
+    busy = await getBusyTimes(integ.composioUserId!, integ.calendarId, now, horizon, avail.timezone);
   } catch {
     return NextResponse.json({ error: "calendar_unavailable" }, { status: 503 });
   }

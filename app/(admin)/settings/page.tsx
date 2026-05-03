@@ -8,6 +8,7 @@ import { GoogleSection } from "@/components/admin/SettingsSections";
 import { AppearanceSection } from "@/components/admin/AppearanceSection";
 import { PaymentProvidersSection } from "@/components/admin/PaymentProvidersSection";
 import { BillingSection } from "@/components/admin/BillingSection";
+import { AppleSyncSection } from "@/components/admin/AppleSyncSection";
 import { isPlanActive } from "@/lib/tiers";
 
 function SettingsCard({
@@ -44,6 +45,11 @@ export default async function SettingsPage({
   const integ = await (await integrations()).findOne({
     userId: user._id,
     provider: "google_calendar",
+  });
+  const apple = await (await integrations()).findOne({
+    userId: user._id,
+    provider: "apple_calendar_mirror",
+    status: "ACTIVE",
   });
   let cals: Array<{ id: string; summary: string; primary: boolean }> = [];
   let calError: string | null = null;
@@ -109,12 +115,24 @@ export default async function SettingsPage({
         title="Google Calendar"
         description="Source of truth for availability and where bookings are written."
       >
-        <GoogleSection
-          status={integ?.status ?? null}
-          calendars={cals}
-          selectedId={integ?.calendarId ?? null}
-          error={calError}
-        />
+        <div className="space-y-6">
+          <GoogleSection
+            status={integ?.status ?? null}
+            calendars={cals}
+            selectedId={integ?.calendarId ?? null}
+            error={calError}
+          />
+          <AppleSyncSection
+            initial={
+              apple?.appleEmail
+                ? {
+                    email: apple.appleEmail,
+                    calendarSummary: apple.calendarSummary || "iCloud",
+                  }
+                : null
+            }
+          />
+        </div>
       </SettingsCard>
 
       <div className="border-t border-border" />
