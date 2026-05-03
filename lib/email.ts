@@ -110,3 +110,41 @@ export async function sendBookingCancelled(args: {
     text: `Booking cancelled: ${args.eventTitle} at ${when}.`,
   });
 }
+
+function formatMoney(amount: number, currency: string): string {
+  const value = amount / 100;
+  try {
+    return new Intl.NumberFormat("en-IE", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: value % 1 === 0 ? 0 : 2,
+    }).format(value);
+  } catch {
+    return `${currency} ${value.toFixed(2)}`;
+  }
+}
+
+export async function sendCancelByHostToGuest(args: {
+  to: string;
+  guestName: string;
+  hostName: string;
+  eventTitle: string;
+  startUtc: Date;
+  profileUrl: string;
+  refund?: { amount: number; currency: string } | null;
+}) {
+  const when = args.startUtc.toUTCString();
+  const refundLine = args.refund
+    ? `<p>A refund of <strong>${formatMoney(args.refund.amount, args.refund.currency)}</strong> has been issued. It typically reaches your account within 5–10 business days.</p>`
+    : "";
+  const body = `<p>Hi ${args.guestName},</p><p>Your meeting <strong>${args.eventTitle}</strong> scheduled for ${when} has been cancelled by ${args.hostName}.</p>${refundLine}<p>If you&rsquo;d like to rebook, you can pick a new time directly from ${args.hostName}&rsquo;s page:</p><p style="margin:24px 0"><a href="${args.profileUrl}" style="background:#3B82F6;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:500">Reschedule</a></p><p style="font-size:13px;color:#666">Or paste this link in your browser:<br><span style="word-break:break-all">${args.profileUrl}</span></p><p>Apologies for any inconvenience.</p>`;
+  const refundText = args.refund
+    ? ` A refund of ${formatMoney(args.refund.amount, args.refund.currency)} has been issued.`
+    : "";
+  await send({
+    to: args.to,
+    subject: `Your booking with ${args.hostName} has been cancelled`,
+    html: shell("Booking cancelled", body),
+    text: `Your meeting "${args.eventTitle}" on ${when} has been cancelled by ${args.hostName}.${refundText} Reschedule: ${args.profileUrl}`,
+  });
+}

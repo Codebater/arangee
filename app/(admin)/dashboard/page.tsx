@@ -7,6 +7,7 @@ import { requireUser } from "@/lib/auth-helpers";
 import { bookings, integrations } from "@/lib/collections";
 import { KpiTile } from "@/components/admin/KpiTile";
 import { Button } from "@/components/ui/button";
+import { CancelBookingButton } from "@/components/admin/CancelBookingButton";
 
 export default async function DashboardPage() {
   const { user } = await requireUser();
@@ -105,13 +106,20 @@ export default async function DashboardPage() {
                         <div className="truncate font-mono text-[11px] text-ink-muted">/{b.eventTypeSlug}</div>
                       </div>
                     </div>
-                    <div className="shrink-0 text-right">
-                      <div className="font-mono text-[12px] tabular text-ink-soft">
-                        {formatInTimeZone(dt, b.guestTimezone || "UTC", "h:mm a")}
+                    <div className="flex shrink-0 items-center gap-2">
+                      <div className="text-right">
+                        <div className="font-mono text-[12px] tabular text-ink-soft">
+                          {formatInTimeZone(dt, b.guestTimezone || "UTC", "h:mm a")}
+                        </div>
+                        <div className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-faint">
+                          {formatInTimeZone(dt, b.guestTimezone || "UTC", "zzz")}
+                        </div>
                       </div>
-                      <div className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-faint">
-                        {formatInTimeZone(dt, b.guestTimezone || "UTC", "zzz")}
-                      </div>
+                      <CancelBookingButton
+                        bookingId={b._id.toString()}
+                        guestName={b.guestName}
+                        hasPayment={Boolean(b.payment)}
+                      />
                     </div>
                   </li>
                 );
