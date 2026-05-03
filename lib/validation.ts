@@ -129,6 +129,7 @@ const colorValueRe = /^#[0-9a-fA-F]{3,8}$|^rgba?\([\d.,\s]+\)$/;
 export const brandingFormSchema = z.object({
   font: z.enum(["geist", "inter", "manrope", "ibm-plex"]).optional(),
   showBookingMeta: z.boolean().optional(),
+  hideBookedSlots: z.boolean().optional(),
   themeTokensLight: z.record(z.string().max(40), z.string().max(40).regex(colorValueRe)).optional(),
   themeTokensDark: z.record(z.string().max(40), z.string().max(40).regex(colorValueRe)).optional(),
 });

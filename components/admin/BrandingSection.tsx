@@ -6,6 +6,7 @@ import { ImageUploader } from "./ImageUploader";
 import { ThemeBuilder } from "./ThemeBuilder";
 import { ProfileCardPicker } from "./ProfileCardPicker";
 import { FontPicker } from "./FontPicker";
+import { BookedSlotsToggle } from "./BookedSlotsToggle";
 import type { ProfileCardId } from "@/lib/profile-cards";
 import type { FontChoice } from "@/lib/fonts";
 
@@ -19,6 +20,7 @@ interface Props {
   font: FontChoice | null;
   allowAvatarGif?: boolean;
   allowBannerGif?: boolean;
+  hideBookedSlots?: boolean;
 }
 
 export function BrandingSection({
@@ -31,6 +33,7 @@ export function BrandingSection({
   font,
   allowAvatarGif = true,
   allowBannerGif = true,
+  hideBookedSlots = false,
 }: Props) {
   const [themeOpen, setThemeOpen] = useState(false);
   return (
@@ -69,6 +72,13 @@ export function BrandingSection({
           Public font
         </p>
         <FontPicker current={font} />
+      </div>
+
+      <div className="space-y-2">
+        <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-muted">
+          Public availability
+        </p>
+        <BookedSlotsToggle initialHidden={hideBookedSlots} />
       </div>
 
       <div className="space-y-2">

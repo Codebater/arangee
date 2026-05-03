@@ -18,6 +18,8 @@ interface Slot {
   endUtc: string;
 }
 
+import type { OccupiedInterval } from "@/lib/availability";
+
 interface Props {
   username: string;
   slug: string;
@@ -27,6 +29,7 @@ interface Props {
   color: string;
   locationLabel: string;
   slots: Slot[];
+  occupied?: OccupiedInterval[];
   unavailable: boolean;
 }
 
@@ -39,6 +42,7 @@ export function BookingShell({
   color,
   locationLabel,
   slots,
+  occupied,
   unavailable,
 }: Props) {
   const [guestTz, setGuestTz] = useState<string>("UTC");
@@ -116,7 +120,13 @@ export function BookingShell({
             </p>
           </div>
         ) : (
-          <BookingCalendar username={username} slug={slug} slots={slots} guestTz={guestTz} />
+          <BookingCalendar
+            username={username}
+            slug={slug}
+            slots={slots}
+            occupied={occupied}
+            guestTz={guestTz}
+          />
         )}
       </section>
     </div>

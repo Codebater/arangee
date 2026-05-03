@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { SlotPicker } from "./SlotPicker";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
+import type { OccupiedInterval } from "@/lib/availability";
 
 interface Slot {
   startUtc: string;
@@ -21,11 +22,13 @@ export function BookingCalendar({
   username,
   slug,
   slots,
+  occupied,
   guestTz,
 }: {
   username: string;
   slug: string;
   slots: Slot[];
+  occupied?: OccupiedInterval[];
   guestTz: string;
 }) {
 
@@ -167,6 +170,7 @@ export function BookingCalendar({
           ) : (
             <SlotPicker
               slots={slots}
+              occupied={occupied}
               selectedDate={selectedYmd}
               guestTimezone={guestTz}
               selected={selected?.startUtc}

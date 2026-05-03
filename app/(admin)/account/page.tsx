@@ -114,6 +114,7 @@ export default async function AccountPage({
           font={user.branding?.font ?? null}
           allowAvatarGif={canUploadGif(user, "avatar")}
           allowBannerGif={canUploadGif(user, "banner")}
+          hideBookedSlots={Boolean(user.branding?.hideBookedSlots)}
         />
       </Section>
 

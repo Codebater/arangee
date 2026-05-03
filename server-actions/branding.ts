@@ -50,6 +50,16 @@ export async function saveBrandingTokens(payload: unknown) {
   revalidatePath(`/${user.username}`);
 }
 
+export async function saveBookedSlotsVisibility(hidden: boolean) {
+  const { user } = await requireUser();
+  await (await users()).updateOne(
+    { _id: user._id },
+    { $set: { "branding.hideBookedSlots": Boolean(hidden), updatedAt: new Date() } },
+  );
+  revalidatePath("/account");
+  revalidatePath(`/${user.username}`);
+}
+
 export async function deleteBrandingImage(kind: "avatar" | "banner") {
   const { user } = await requireUser();
   await removeImageForUser(user, kind);

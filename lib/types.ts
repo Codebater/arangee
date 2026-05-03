@@ -20,6 +20,7 @@ export interface UserBranding {
   themeTokensDark?: Record<string, string>;
   font?: FontChoice;
   showBookingMeta?: boolean;
+  hideBookedSlots?: boolean;
   profileCard?: { template: string; params?: Record<string, string> };
 }
 

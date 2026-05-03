@@ -1,11 +1,16 @@
 export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
-import { availability, integrations, bookings } from "@/lib/collections";
+import { availability, integrations, bookings, eventTypes } from "@/lib/collections";
 import { resolveUserAndEventType } from "@/lib/scope";
 import { isReservedUsername } from "@/lib/users";
-import { computeSlots } from "@/lib/availability";
+import {
+  computeSlots,
+  computeOccupiedIntervals,
+  type OccupiedInterval,
+} from "@/lib/availability";
 import { getBusyTimes } from "@/lib/calendar";
+import type { EventColor } from "@/lib/types";
 import { ymdInTz } from "@/lib/timezone";
 import { BookingShell } from "@/components/public/BookingShell";
 import { ProfileHeader } from "@/components/public/ProfileHeader";
@@ -35,6 +40,7 @@ export default async function BookingPage({
   const avail = integ ? await (await availability()).findOne({ userId: host._id }) : null;
 
   let slots: { startUtc: string; endUtc: string }[] = [];
+  let occupied: OccupiedInterval[] = [];
   let unavailable = false;
   if (integ && avail) {
     try {
@@ -47,17 +53,19 @@ export default async function BookingPage({
         horizon,
         avail.timezone,
       );
+
+      const allHostBookings = await (await bookings())
+        .find({
+          userId: host._id,
+          status: "confirmed",
+          startUtc: { $gte: now, $lt: horizon },
+        })
+        .toArray();
+
       const counts: Record<string, number> = {};
       if (evt.rules.maxBookingsPerDay !== null) {
-        const list = await (await bookings())
-          .find({
-            userId: host._id,
-            eventTypeSlug: slug,
-            status: "confirmed",
-            startUtc: { $gte: now, $lt: horizon },
-          })
-          .toArray();
-        for (const b of list) {
+        for (const b of allHostBookings) {
+          if (b.eventTypeSlug !== slug) continue;
           const k = ymdInTz(b.startUtc, avail.timezone);
           counts[k] = (counts[k] ?? 0) + 1;
         }
@@ -69,6 +77,30 @@ export default async function BookingPage({
         now,
         bookingsPerDay: counts,
       }).map((s) => ({ startUtc: s.startUtc.toISOString(), endUtc: s.endUtc.toISOString() }));
+
+      if (!host.branding?.hideBookedSlots) {
+        const eventTypeIds = Array.from(
+          new Set(allHostBookings.map((b) => b.eventTypeId.toString())),
+        );
+        const colorMap: Record<string, EventColor> = {};
+        if (eventTypeIds.length) {
+          const evts = await (await eventTypes())
+            .find({ userId: host._id })
+            .project<{ _id: { toString(): string }; color: EventColor }>({ _id: 1, color: 1 })
+            .toArray();
+          for (const e of evts) colorMap[e._id.toString()] = e.color;
+        }
+        occupied = computeOccupiedIntervals({
+          bookings: allHostBookings.map((b) => ({
+            startUtc: b.startUtc,
+            endUtc: b.endUtc,
+            eventTypeId: b.eventTypeId,
+            payment: b.payment,
+          })),
+          eventTypeColors: colorMap,
+          googleBusy: busy,
+        });
+      }
     } catch {
       unavailable = true;
     }
@@ -128,6 +160,7 @@ export default async function BookingPage({
         color={evt.color}
         locationLabel={locationLabel}
         slots={slots}
+        occupied={occupied}
         unavailable={unavailable}
       />
     </main>
