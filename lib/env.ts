@@ -42,7 +42,7 @@ export function env(): Env {
 export function paymentsConfigured(): { stripe: boolean; nowpayments: boolean } {
   const e = env();
   return {
-    stripe: Boolean(e.STRIPE_SECRET_KEY && e.STRIPE_WEBHOOK_SECRET && e.STRIPE_CONNECT_CLIENT_ID),
+    stripe: Boolean(e.STRIPE_SECRET_KEY && e.STRIPE_WEBHOOK_SECRET),
     nowpayments: true,
   };
 }

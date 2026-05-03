@@ -52,19 +52,15 @@ function StripeBlock({
           Stripe
         </p>
         <p className="text-[13px] text-ink-soft">
-          Stripe Connect isn&apos;t configured on this server. Set{" "}
+          Stripe isn&apos;t configured on this server. Set{" "}
           <code className="rounded bg-surface-hover px-1 py-0.5 font-mono text-[12px]">
             STRIPE_SECRET_KEY
-          </code>
-          ,{" "}
-          <code className="rounded bg-surface-hover px-1 py-0.5 font-mono text-[12px]">
-            STRIPE_CONNECT_CLIENT_ID
           </code>{" "}
           and{" "}
           <code className="rounded bg-surface-hover px-1 py-0.5 font-mono text-[12px]">
             STRIPE_WEBHOOK_SECRET
           </code>{" "}
-          in Vercel.
+          in Vercel, and enable Connect on your Stripe account.
         </p>
       </div>
     );
